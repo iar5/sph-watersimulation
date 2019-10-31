@@ -10,6 +10,7 @@ import Stats from '/lib/stats.js'
 // SETUP WEBGL
 const gl = document.getElementById("canvas").getContext("webgl2")
 twgl.resizeCanvasToDisplaySize(gl.canvas)
+twgl.setAttributePrefix("a_")
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.enable(gl.DEPTH_TEST)
 gl.enable(gl.BLEND)
@@ -31,14 +32,6 @@ loadTextResource('/src/shader/point.vs', (pvs) => {
         })
     })
 })
-
-// SPHERE BUFFER
-let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 0.4, 12, 12)
-sphereBufferInfo.attribs["a_position"] = sphereBufferInfo.attribs["position"]
-sphereBufferInfo.attribs["a_normal"] = sphereBufferInfo.attribs["normal"]
-delete sphereBufferInfo.attribs["position"]
-delete sphereBufferInfo.attribs["normal"]
-delete sphereBufferInfo.attribs["texcoord"]
 
 
 // CAMERA
@@ -63,6 +56,8 @@ stats.dom.style.height = "initial"
 var lasttime = 0
 
 
+// SPHERE BUFFER
+let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
 
 
 /**
@@ -71,6 +66,7 @@ var lasttime = 0
  */
 function draw(time) {
     requestAnimationFrame(draw)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     stats.begin();
 
     let t = (time-lasttime)/1000 // timestep
@@ -87,16 +83,19 @@ function draw(time) {
         u_worldViewProjection: m4.multiply(viewProjection, world),
     } 
     
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {a_position: watersimulation.getWaterDropsAsBufferArray()});
     gl.useProgram(pointProgram.program);
+    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: watersimulation.getWaterDropsAsBufferArray()});
     twgl.setUniforms(pointProgram, uniforms);
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 
     gl.useProgram(diffusProgram.program);
     twgl.setUniforms(diffusProgram, uniforms);
-    twgl.setUniforms(diffusProgram, {u_model: m4.translation([watersimulation.getSphere().pos[0], 0, 0])});
+    let sphereModelMat = m4.identity();
+    let r = watersimulation.getSphere().r
+    m4.scale(sphereModelMat, v3.create(r, r, r), sphereModelMat)
+    m4.translate(sphereModelMat, watersimulation.getSphere().pos, sphereModelMat)    
+    twgl.setUniforms(diffusProgram, {u_model: sphereModelMat});
     twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
     twgl.drawBufferInfo(gl, sphereBufferInfo, gl.TRIANGLES);
 
@@ -118,6 +117,7 @@ function loadTextResource(url, callback) {
 	}
 	request.send()
 }
+
 
 /**
  * Mouse controls
