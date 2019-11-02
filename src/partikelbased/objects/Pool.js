@@ -1,5 +1,5 @@
-import * as Vec3 from "/lib/twgl/v3.js";
-import * as Mat4 from "/lib/twgl/m4.js";
+import * as Vec3 from "./../../../../lib/twgl/v3.js";
+import * as Mat4 from "./../../../../lib/twgl/m4.js";
 
 const BOUNCE = 0.1
 const FRICTION = 0.1
@@ -14,7 +14,7 @@ export class Pool {
         this.pos = pos
     }
 
-    update(time){
+    update(tstep){
         
     }
 

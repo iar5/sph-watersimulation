@@ -1,5 +1,4 @@
-import * as Vec3 from '../lib/twgl/v3.js'
-import Vec3Factory from './objects/Vec3Factory.js'
+import * as Vec3 from '../../lib/twgl/v3.js'
 import { Drop } from './objects/Drop.js'
 import { Sphere } from './objects/Sphere.js'
 import { Pool } from './objects/Pool.js'
@@ -18,13 +17,12 @@ export const watersimulation = (function (){
 
     /**
      * 
-     * @param {Number} time timestamp
-     * @param {Number} t timestep
+     * @param {Number} tstep timestep
      */
-    function update(time, t){ 
+    function update(tstep){ 
 
-        sphere.update(time)
-        emitter.update(time, t)
+        sphere.update(tstep)
+        emitter.update(tstep)
 
         // SIMULATION
         let i = drops.length
@@ -32,8 +30,8 @@ export const watersimulation = (function (){
             let drop = drops[i]
 
             // APLLYING FORCES
-            let f = Vec3.mulScalar(force, t)
-            drop.update(t, f)
+            let f = Vec3.mulScalar(force, tstep)
+            drop.update(tstep, f)
 
             // COLLISION 
             sphere.collide(drop)
@@ -56,7 +54,6 @@ export const watersimulation = (function (){
         for(let drop of drops){
             result.push(drop.pos[0], drop.pos[1], drop.pos[2])
         }
-        result.push(sphere.pos[0], sphere.pos[1], sphere.pos[2])
         return result
     }
 

@@ -1,4 +1,5 @@
-import * as Vec3 from "./../../lib/twgl/v3.js";
+import * as Vec3 from "./../../../../lib/twgl/v3.js";
+import * as Mat4 from "./../../../../lib/twgl/m4.js";
 import Vec3Factory from "./Vec3Factory.js";
 
 export class Drop {
@@ -16,11 +17,11 @@ export class Drop {
     }
 
     /**
-     *
-     * @param {Vec3} t timestep
+     * @param {Number} time timestamp
+     * @param {Number} tstep timestep
      * @param {Vec3} f external force
      */
-    update(t, f){
+    update(tstep, f){
         let temp = Vec3Factory.create()
         Vec3.copy(this.pos, temp)
 

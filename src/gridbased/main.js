@@ -1,9 +1,9 @@
-import * as twgl from './../lib/twgl/twgl.js';
-import * as v3 from './../lib/twgl/v3.js';
-import * as m4 from './../lib/twgl/m4.js';
-import * as twglprimitives from './../lib/twgl/primitives.js'
+import * as twgl from '../../lib/twgl/twgl.js';
+import * as v3 from '../../lib/twgl/v3.js';
+import * as m4 from '../../lib/twgl/m4.js';
+import * as twglprimitives from '../../lib/twgl/primitives.js'
 import {watersimulation} from './watersimulation.js'
-import Stats from '/lib/stats.js'
+import Stats from '../../lib/stats.js'
 
 
 
@@ -20,16 +20,11 @@ gl.enable(gl.CULL_FACE)
 
 // LOAD SHADER
 var pointProgram 
-var diffusProgram 
-loadTextResource('/src/shader/point.vs', (pvs) => {
-    loadTextResource('/src/shader/point.fs', (pfs) => {
-        loadTextResource('/src/shader/diffus.vs', (dvs) => {
-            loadTextResource('/src/shader/diffus.fs', (dfs) => {
-                pointProgram = twgl.createProgramInfo(gl, [pvs, pfs]);
-                diffusProgram = twgl.createProgramInfo(gl, [dvs, dfs]);
-                requestAnimationFrame(draw);
-            })
-        })
+const SHADER_DIR = '/src/gridbased/shader/'
+loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
+    loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
+        pointProgram = twgl.createProgramInfo(gl, [pvs, pfs]);
+        requestAnimationFrame(draw);
     })
 })
 
@@ -41,7 +36,7 @@ const zNear = 0.001
 const zFar = 100
 const projection = m4.perspective(fov, aspect, zNear, zFar)
 
-const eye = [0, 0, -6]
+const eye = [0, 0.5, -6]
 const target = [0, 0, 0]
 const up = [0, 1, 0]
 const camera = m4.lookAt(eye, target, up)
@@ -56,9 +51,6 @@ stats.dom.style.height = "initial"
 var lasttime = 0
 
 
-// SPHERE BUFFER
-let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
-
 
 /**
  * 
@@ -69,10 +61,10 @@ function draw(time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     stats.begin();
 
-    let t = (time-lasttime)/1000 // timestep
+    let timestep = (time-lasttime)/1000 
     lasttime = time
 
-    watersimulation.update(time, t)
+    watersimulation.update(timestep)
 
     const view = m4.inverse(camera)
     const viewProjection = m4.multiply(projection, view)
@@ -88,17 +80,7 @@ function draw(time) {
     twgl.setUniforms(pointProgram, uniforms);
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
-
-    gl.useProgram(diffusProgram.program);
-    twgl.setUniforms(diffusProgram, uniforms);
-    let sphereModelMat = m4.identity();
-    let r = watersimulation.getSphere().r
-    m4.scale(sphereModelMat, v3.create(r, r, r), sphereModelMat)
-    m4.translate(sphereModelMat, watersimulation.getSphere().pos, sphereModelMat)    
-    twgl.setUniforms(diffusProgram, {u_model: sphereModelMat});
-    twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
-    twgl.drawBufferInfo(gl, sphereBufferInfo, gl.TRIANGLES);
-
+    
     stats.end();
 }
 

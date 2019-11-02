@@ -1,5 +1,5 @@
-import * as Vec3 from '/lib/twgl/v3.js'
-import Vec3Factory from './Vec3Factory.js'
+import * as Vec3 from "./../../../../lib/twgl/v3.js";
+import * as Mat4 from "./../../../../lib/twgl/m4.js";import Vec3Factory from './Vec3Factory.js'
 import { Drop } from './Drop.js'
 
 
@@ -21,13 +21,13 @@ export class Emitter{
         this.spread = spread
     }
 
-    update(time, t){
-        let spawns = Math.round(this.amount*t) | 1
+    update(tstep){
+        let spawns = Math.round(this.amount*tstep) | 1
 
         for(let i = 0; i < spawns; i++){
             let s = Vec3Factory.create(
                 (Math.random()-0.5) * this.offset, 
-                Math.random()*t, 
+                Math.random()*tstep, 
                 (Math.random()-0.5) * this.offset, 
             )
             Vec3.add(this.spawn, s, s)

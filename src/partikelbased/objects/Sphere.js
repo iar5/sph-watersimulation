@@ -1,5 +1,5 @@
-import * as Vec3 from "/lib/twgl/v3.js";
-import * as Mat4 from "/lib/twgl/m4.js";
+import * as Vec3 from "./../../../../lib/twgl/v3.js";
+import * as Mat4 from "./../../../../lib/twgl/m4.js";
 import { Drop } from "./Drop.js";
 
 const COLLISION_OFFSET = 0.0001;
@@ -11,8 +11,8 @@ export class Sphere {
         this.r = radius
     }
 
-    update(time){
-        let x = Math.sin(time/1000)*0.3
+    update(tstep){
+        let x = Math.sin(Date.now()/500)*0.5
         this.pos[0] = x
     }
 
