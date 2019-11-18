@@ -1,8 +1,20 @@
+/**
+ * @author Tom Wendland
+ * 
+ * Force abh von Timestep
+ * Wenn tab gewechselt wird Timestep riesig
+ * Timestep kosntatn setzen? Listener?
+ * pplyForceaus update raus nehemen
+ * !!! Matrizen richtig machen. Irgendeine Seite ist immer gespiegelt. Wie Licht etc handeln?
+ * */
+
+
 import * as Vec3 from '../../lib/twgl/v3.js'
 import { Drop } from './objects/Drop.js'
 import { Sphere } from './objects/Sphere.js'
 import { Pool } from './objects/Pool.js'
 import { Emitter } from './objects/Emitter.js'
+
 
 export const watersimulation = (function (){
 

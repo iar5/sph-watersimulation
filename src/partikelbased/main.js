@@ -1,3 +1,10 @@
+/**
+ * @author Tom Wendland
+ * 
+ * Idee:
+ * - 
+ */
+
 import * as twgl from '../../lib/twgl/twgl.js';
 import * as v3 from '../../lib/twgl/v3.js';
 import * as m4 from '../../lib/twgl/m4.js';
@@ -6,8 +13,9 @@ import {watersimulation} from './watersimulation.js'
 import Stats from '../../lib/stats.js'
 
 
-
-// SETUP WEBGL
+//////////////////
+//  SETUP WEBGL //
+//////////////////
 const gl = document.getElementById("canvas").getContext("webgl2")
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 twgl.setAttributePrefix("a_")
@@ -19,7 +27,9 @@ gl.enable(gl.CULL_FACE)
 var lasttime = 0 // used for calculating the timestep
 
 
-// LOAD SHADER
+//////////////////
+//  LOAD SHADER //
+//////////////////
 var pointProgram 
 var diffusProgram 
 const SHADER_DIR = '/src/partikelbased/shader/'
@@ -36,31 +46,37 @@ loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
 })
 
 
-// CAMERA
+//////////////////
+//    CAMERA    //
+//////////////////
 const fov = 35 * Math.PI / 180
 const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
-const zNear = 0.001
-const zFar = 100
-const projection = m4.perspective(fov, aspect, zNear, zFar)
-const camera = m4.translation([0, 0, 6]);
-const world = m4.identity() 
+const near = 0.001
+const far = 100
+const projection = m4.perspective(fov, aspect, near, far)
+const camera = m4.translation([0, 0, 6]) // guckt nach -z 
+const world = m4.identity() // guckt nacht +z
+
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
-stats.dom.style.width = "initial"
-stats.dom.style.height = "initial"
 
 
 
-// LIGHT (directional?)
+//////////////////
+//     LIGHT    //
+//////////////////
 const lightuniform = {
     ambient: [0.3, 0.3, 0.3],
     sunColor: [0.9, 0.9, 0.9],
     sunDirection: [2.0, 4.0, 3.0],
+    // direction?
 }
 
 
-// SPHERE BUFFER
+//////////////////
+//    SPHERE    //
+//////////////////
 let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
 
 

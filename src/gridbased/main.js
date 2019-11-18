@@ -45,8 +45,6 @@ const world = m4.identity()
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
-stats.dom.style.width = "initial"
-stats.dom.style.height = "initial"
 
 var lasttime = 0
 
