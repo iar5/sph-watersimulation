@@ -9,7 +9,7 @@ import * as twgl from '../../lib/twgl/twgl.js';
 import * as v3 from '../../lib/twgl/v3.js';
 import * as m4 from '../../lib/twgl/m4.js';
 import * as twglprimitives from '../../lib/twgl/primitives.js'
-import {watersimulation} from './watersimulation.js'
+import { watersimulation } from './watersimulation.js'
 import Stats from '../../lib/stats.js'
 
 
@@ -54,8 +54,7 @@ const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
 const near = 0.001
 const far = 100
 const projection = m4.perspective(fov, aspect, near, far)
-const camera = m4.translation([0, 0, 6]) // guckt nach -z 
-const world = m4.identity() // guckt nacht +z
+const camera = m4.translation([0, 0, 6]) // guckt nach -z. iverse wäre welt koordinaten, eins reicht also. werden beide als view zusammengefasst
 
 
 const stats = new Stats();
@@ -68,9 +67,8 @@ document.body.appendChild(stats.dom);
 //////////////////
 const lightuniform = {
     ambient: [0.3, 0.3, 0.3],
-    sunColor: [0.9, 0.9, 0.9],
-    sunDirection: [2.0, 4.0, 3.0],
-    // direction?
+    sunColor: [0.8, 0.8, 0.8],
+    sunPosition: [2.0, 3.0, 2.0],
 }
 
 
@@ -94,15 +92,11 @@ function draw(time) {
     lasttime = time
 
     watersimulation.update(timestep)
-
-    const view = m4.inverse(camera)
-    const viewProjection = m4.multiply(projection, view)
     
     const uniforms = {
-        u_world: world,
-        u_viewProjection: viewProjection,
-        u_worldInverseTranspose: m4.transpose(m4.inverse(world)),
-        u_worldViewProjection: m4.multiply(viewProjection, world),
+        u_projection: projection,
+        u_view: m4.inverse(camera),
+        u_model: m4.identity() // placeholder
     } 
     
     gl.useProgram(diffusProgram.program);
@@ -119,6 +113,9 @@ function draw(time) {
     gl.useProgram(pointProgram.program);
     const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: watersimulation.getWaterDropsAsBufferArray()});
     twgl.setUniforms(pointProgram, uniforms);
+    let waterModelMat = m4.identity();
+    m4.translate(waterModelMat, [0, 0, 0], waterModelMat)    
+    twgl.setUniforms(pointProgram, {u_model: waterModelMat});
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 

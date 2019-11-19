@@ -1,15 +1,18 @@
 precision highp float;
 
-varying vec4 v_color;
+varying vec4 v_position;
 varying vec3 v_normal;
+varying vec4 v_color;
 
 uniform vec3 ambient;
-uniform vec3 sunDirection;
+uniform vec3 sunPosition;
 uniform	vec3 sunColor;
 
 
 void main() {
-	vec3 normSunDir = normalize(sunDirection);
+	vec3 normSunDir = normalize(sunPosition - v_position.xyz); // point light
+	//vec3 normSunDir = normalize(sunPosition); // directional light
+
 	vec3 lightIntensity;
 
 	if(gl_FrontFacing) 

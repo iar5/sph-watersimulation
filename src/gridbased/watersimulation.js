@@ -1,6 +1,5 @@
 import * as Vec3 from '../../lib/twgl/v3.js';
 import * as Mat4 from '../../lib/twgl/m4.js';
-import {dreiDimArr} from './utils.js'
 
 
 export const watersimulation = (function (){
@@ -20,12 +19,12 @@ export const watersimulation = (function (){
     for(let w=-width/2; w<width/2; w+= 1/cells){
         for(let h=-height/2; h<height/2; h+= 1/cells){
             for(let d=-depth/2; d<depth/2; d += 1/cells){
-                let d = Vec3.create(
+                let drop = Vec3.create(
                     w + 1/cells/2,
                     h + 1/cells/2,
                     d + 1/cells/2
                 )
-                drops.push(d)
+                drops.push(drop)
             }
         }
     }
@@ -57,3 +56,18 @@ export const watersimulation = (function (){
         }    
     }
 })()
+
+
+function dreiDimArr(length){
+    var result = []
+    for(let i=0; i<length; i++){
+        result[i] = []
+        for(let j=0; j<length; j++){
+            result[j][j] = []
+            for(let k=0; k<length; k++){
+                result[j][j][k] = 0
+            }
+        }
+    }
+    return result;
+}

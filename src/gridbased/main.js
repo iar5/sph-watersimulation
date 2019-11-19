@@ -2,7 +2,7 @@ import * as twgl from '../../lib/twgl/twgl.js';
 import * as v3 from '../../lib/twgl/v3.js';
 import * as m4 from '../../lib/twgl/m4.js';
 import * as twglprimitives from '../../lib/twgl/primitives.js'
-import {watersimulation} from './watersimulation.js'
+import { watersimulation } from './watersimulation.js'
 import Stats from '../../lib/stats.js'
 
 
@@ -36,7 +36,7 @@ const zNear = 0.001
 const zFar = 100
 const projection = m4.perspective(fov, aspect, zNear, zFar)
 
-const eye = [0, 0.5, -6]
+const eye = [0, 0.5, 6]
 const target = [0, 0, 0]
 const up = [0, 1, 0]
 const camera = m4.lookAt(eye, target, up)
@@ -64,13 +64,10 @@ function draw(time) {
 
     watersimulation.update(timestep)
 
-    const view = m4.inverse(camera)
-    const viewProjection = m4.multiply(projection, view)
     const uniforms = {
-        u_viewInverse: camera,
-        u_world: world,
-        u_worldInverseTranspose: m4.transpose(m4.inverse(world)),
-        u_worldViewProjection: m4.multiply(viewProjection, world),
+        u_projection: projection,
+        u_view: m4.inverse(camera),
+        u_model: m4.identity(),
     } 
     
     gl.useProgram(pointProgram.program);

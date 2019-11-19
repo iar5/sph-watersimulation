@@ -12,7 +12,7 @@ export class Sphere {
     }
 
     update(tstep){
-        let x = Math.sin(Date.now()/500)*0.5
+        let x = Math.sin(Date.now()/500)*0.6
         this.pos[0] = x
     }
 
