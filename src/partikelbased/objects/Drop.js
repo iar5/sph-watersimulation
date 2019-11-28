@@ -6,14 +6,16 @@ import { EXTERNAL_FORCES } from "../simulation.js";
 
 export class Drop {
 
-    m = 0.01 // mass
     oldpos = Vec3.create() // previous position for collision handling, dont change it beside in Drop.update()!
+    m = 0.01 // mass resp. density
+    presure = 0 // presure
+
 
     /**
      * @param {Vec3} p position
-     * @param {Vec3} v velocity 
+     * @param {Vec3} v velocity pro sekunde
      */
-    constructor(p=Vec3Factory.create(), v=Vec3Factory.create()){
+    constructor(p=Vec3.create(), v=Vec3.create()){
         this.pos = p
         this.v = v
         Vec3.copy(this.pos, this.oldpos)
@@ -23,11 +25,11 @@ export class Drop {
      * @param {Number} dt timestep
      */
     update(dt){
-        // TODO consider mass 
-        let f = Vec3.mulScalar(EXTERNAL_FORCES, dt*this.m)
-
         Vec3.copy(this.pos, this.oldpos)
-        Vec3.add(this.v, f, this.v)
+
+        let a = Vec3.mulScalar(EXTERNAL_FORCES, 0.0001) 
+        
+        Vec3.add(this.v, a, this.v)
         Vec3.add(this.pos, this.v, this.pos)
     }
 

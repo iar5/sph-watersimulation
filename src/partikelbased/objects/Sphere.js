@@ -1,6 +1,7 @@
 import * as Vec3 from "./../../../lib/twgl/v3.js";
 import * as Mat4 from "./../../../lib/twgl/m4.js";
 import { Drop } from "./Drop.js";
+import Vec3Factory from "./Vec3Factory.js";
 
 
 export const COLLISION_OFFSET = 0.001;
@@ -45,15 +46,17 @@ export class Sphere {
 
         const reflect = Vec3.mulScalar(n, 2*Vec3.dot(dir, n))
         Vec3.subtract(dir, reflect, reflect)
-
+        
         const out = Vec3.add(dir, reflect)
-        Vec3.normalize(out, out)
+        Vec3.normalize(out, out) // physikalisch nicht begründet aber sieht richtig aus
         
         const speed = Vec3.length(drop.v)
         Vec3.mulScalar(out, speed*BOUNCE, out)
 
         Vec3.copy(hit, drop.pos)
         Vec3.copy(out, drop.v)
+
+        Vec3Factory.add(dir, hit, n, reflect, out)
     }
 
 

@@ -1,12 +1,18 @@
-import * as Vec3 from "./../../../../lib/twgl/v3.js";
+import * as Vec3 from "./../../../lib/twgl/v3.js";
 
+/**
+ * TODO
+ * in Vec3 Klasse einbinden
+ * temporär zur Berechnung benutze Vec3`s nach Benutzung freigeben
+ */
 export default (function(){
 
     const vecs = []
 
     return{
-        add(v){
-            vecs.push(v)                                    
+        add(...vs){
+            for(let v of vs)
+                vecs.push(v)                                    
         },
         create(x = 0, y = 0, z = 0){            
             let l = vecs.length

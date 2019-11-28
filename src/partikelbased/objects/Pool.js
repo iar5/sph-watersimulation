@@ -21,7 +21,7 @@ export class Pool {
     collide(drop){
         /**
          * oldpos zum testen ob innerhalb bewegung durch plane weil pos an ner kante außerhalb sein könnte wenn zb diagonal bewegt
-         * klappt nur gut wenn kollision von innen nach außen gebraucht wird
+         * klappt nur gut wenn kollision von innen nach außen gesucht wird
          */
 
         let x = this.pos[0]
@@ -37,7 +37,7 @@ export class Pool {
             && Math.abs(oldpos[2]) <= z+this.length/2
         ){
             drop.pos[1] = y+COLLISION_OFFSET
-            drop.v[1] = 0
+            drop.v[1] = -drop.v[1]*BOUNCE
         }
 
         // LEFT
@@ -49,7 +49,7 @@ export class Pool {
             && Math.abs(oldpos[2]) <= z+this.length/2
         ){
             drop.pos[0] = left+COLLISION_OFFSET
-            drop.v[0] = 0
+            drop.v[0] = -drop.v[0]*BOUNCE
         }
 
          // BACK
@@ -61,7 +61,7 @@ export class Pool {
              && Math.abs(oldpos[0]) < z+this.width/2
          ){
              drop.pos[2] = back+COLLISION_OFFSET
-             drop.v[2] = 0
+             drop.v[2] = -drop.v[2]*BOUNCE
          } 
     }
 }

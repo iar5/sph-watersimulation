@@ -90,7 +90,8 @@ function render(time) {
     requestAnimationFrame(render)
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    
+    twgl.resizeCanvasToDisplaySize(canvas)
+
     stats.begin();
     
     if(!pause) simulation.update(1/60) 
@@ -156,14 +157,13 @@ document.onmousemove = function(e) {
     let newY = e.clientY;
     let deltaX = newX - lastMouseX;
     let deltaY = newY - lastMouseY;
+    lastMouseX = newX
+    lastMouseY = newY;
     let newRotationMatrix = m4.create();
     m4.identity(newRotationMatrix);
     m4.rotateY(newRotationMatrix, -degToRad(deltaX / 5), newRotationMatrix);
-    //m4.rotateX(newRotationMatrix, degToRad(deltaY / 5), newRotationMatrix);
+    //m4.rotateX(newRotationMatrix, -degToRad(deltaY / 5), newRotationMatrix);
     m4.multiply(newRotationMatrix, camera, camera);
-
-    lastMouseX = newX
-    lastMouseY = newY;
 }
 
 

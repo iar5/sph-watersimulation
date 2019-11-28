@@ -13,7 +13,7 @@ export class Emitter{
      * @param {Number} offset spawn offset from position
      * @param {Number} spread initial velocity in a randome direction
      */
-    constructor(spawn, drops, amount=100, offset=0.3, spread=0.01){
+    constructor(spawn, drops, amount=10, offset=0.3, spread=0.01){
         this.spawn = spawn
         this.drops = drops
         this.amount = amount
@@ -21,8 +21,8 @@ export class Emitter{
         this.spread = spread
     }
 
-    update(dt){
-        let spawns = Math.round(this.amount*dt) | 1
+    update(){
+        let spawns = Math.round(this.amount) | 1
 
         for(let i = 0; i < spawns; i++){
             let s = Vec3Factory.create(
