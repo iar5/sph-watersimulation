@@ -1,0 +1,3 @@
+1. update
+2. collision 
+weil collision v beeinflusst

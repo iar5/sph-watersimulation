@@ -3,40 +3,89 @@ import * as Mat4 from "./../../../lib/twgl/m4.js";
 import { Drop } from "./Drop.js";
 
 
-const COLLISION_OFFSET = 0.0001;
+export const COLLISION_OFFSET = 0.001;
+export const BOUNCE = 0.3;
 
 export class Sphere {
+
+    animcount = 0
 
     constructor(pos, radius){
         this.pos = pos
         this.r = radius
     }
 
-    update(tstep){
-        let x = Math.sin(Date.now()/500)*0.6
+    update(dt){
+        this.animcount += dt
+        let x = Math.sin(this.animcount)
         this.pos[0] = x
     }
 
     /**
-     * 
+     * Bisher nur Partikel bewegt sich in Sphere Kollision
+     * TODO Sphere bewegt sich in Partikel Kollision
      * @param {Drop} drop 
      */
     collide(drop){
-        const dist = Vec3.subtract(drop.pos, this.pos) 
-        const l = Vec3.length(dist)
-        const d = l - this.r  // abstand = zur kugeloberfläche von außen betrachtet
+        const dist = Vec3.length(Vec3.subtract(drop.pos, this.pos) )
 
-        if(d <= 0){
-            const oldpos = Vec3.subtract(drop.pos, drop.v)
+        if(dist > this.r) 
+            return
 
-            const posnew = Vec3.normalize(dist)
-            Vec3.mulScalar(posnew, this.r+COLLISION_OFFSET, posnew)
+        const dir = Vec3.subtract(drop.pos, drop.oldpos)
+        Vec3.normalize(dir, dir)
 
-            const vnew = Vec3.subtract(posnew, oldpos)
-            Vec3.mulScalar(vnew, Vec3.length(drop.v)/2, vnew)
+        const hit = Sphere.intersectRaySphere(drop.pos, dir, this.pos, this.r+COLLISION_OFFSET)
+        
+        if(!hit)  
+            return  
+               
+        const n = Vec3.subtract(hit, this.pos)
+        Vec3.normalize(n, n)
 
-            Vec3.copy(posnew, drop.pos)
-            Vec3.copy(vnew, drop.v)
-        }
+        const reflect = Vec3.mulScalar(n, 2*Vec3.dot(dir, n))
+        Vec3.subtract(dir, reflect, reflect)
+
+        const out = Vec3.add(dir, reflect)
+        Vec3.normalize(out, out)
+        
+        const speed = Vec3.length(drop.v)
+        Vec3.mulScalar(out, speed*BOUNCE, out)
+
+        Vec3.copy(hit, drop.pos)
+        Vec3.copy(out, drop.v)
+    }
+
+
+    /**
+     * @author Christer Ercison
+     * @description Intersects ray r = p + td, |d| = 1 with sphere
+     * @param {Vec3} p Origin
+     * @param {Vec3} d Direction
+     * @param {Vec3} s Sphere position
+     * @param {Number} r Sphere radius
+     * @param {Vec} intersection point
+     */
+    static intersectRaySphere(p, d, s, r){
+        var m = Vec3.subtract(p, s)
+        var b = Vec3.dot(m, d);
+        var c = Vec3.dot(m, m) - r*r;
+
+        // Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
+        if (c > 0 && b > 0) 
+            return 
+
+        var discr = b*b - c;
+
+        // A negative discriminant corresponds to ray missing sphere
+        if (discr < 0) 
+            return 
+
+        // Ray now found to intersect sphere, compute smallest t value of intersection 
+        var t = -b - Math.sqrt(discr);
+
+        var out = Vec3.mulScalar(d, t)
+        Vec3.add(p, out, out)
+        return out    
     }
 }

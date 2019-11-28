@@ -20,5 +20,5 @@ void main() {
 	else 
 		lightIntensity = ambient + sunColor * max(dot(-v_normal, normSunDir), 0.0);
 
-	gl_FragColor = vec4(v_color.rgb * lightIntensity, v_color.a);
+	gl_FragColor = vec4(v_color.rgb * lightIntensity, 0.3);
 }

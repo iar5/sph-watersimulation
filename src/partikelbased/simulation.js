@@ -16,36 +16,31 @@ import { Pool } from './objects/Pool.js'
 import { Emitter } from './objects/Emitter.js'
 
 
-export const watersimulation = (function (){
+export const EXTERNAL_FORCES = [0, -9.81, 0]
 
-    const force = [0, -0.0981, 0]
+export const simulation = (function (){
 
     const drops = []
 
     const pool = new Pool(Vec3.create(0, -1, 0), 2, 2, 1)
     const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
-    const emitter = new Emitter(Vec3.create(0, 3, 0), drops, 100)
-
+    const emitter = new Emitter(Vec3.create(0, 3, 0), drops)
 
     /**
      * 
-     * @param {Number} tstep timestep
+     * @param {Number} dt timestep
      */
-    function update(tstep){ 
+    function update(dt){ 
 
-        sphere.update(tstep)
-        emitter.update(tstep)
+        //sphere.update(dt)
+        emitter.update(dt)
 
-        // SIMULATION
         let i = drops.length
         while (i--) {
             let drop = drops[i]
 
-            // APLLYING FORCES
-            let f = Vec3.mulScalar(force, tstep)
-            drop.update(tstep, f)
+            drop.update(dt)
 
-            // COLLISION 
             sphere.collide(drop)
             pool.collide(drop)
             
@@ -57,28 +52,20 @@ export const watersimulation = (function (){
         }        
     }
 
-    /**
-     * transforms array vector to continous position buffer array 
-     * @returns {Array} 
-     */
-    function getWaterDropsAsBufferArray(){
-        let result = []
-        for(let drop of drops){
-            result.push(drop.pos[0], drop.pos[1], drop.pos[2])
-        }
-        return result
-    }
-
 
     // PUBLIC METHODS 
     return {
         update,
-        getWaterDropsAsBufferArray,
+        getPoints(){
+            let result = []
+            for(let drop of drops){
+                result.push(drop.pos[0], drop.pos[1], drop.pos[2])
+            }
+            return result
+        },
         getSphere(){
-            return sphere
+            return sphere 
         },
-        getPool(){
-            return pool
-        },
+
     }
 })()

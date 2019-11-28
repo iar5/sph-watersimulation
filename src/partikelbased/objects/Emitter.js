@@ -9,7 +9,7 @@ export class Emitter{
      * 
      * @param {Vec3} spawn position
      * @param {Array} drops data destination
-     * @param {Number} amount particles per millisecond
+     * @param {Number} amount particles per second
      * @param {Number} offset spawn offset from position
      * @param {Number} spread initial velocity in a randome direction
      */
@@ -21,23 +21,22 @@ export class Emitter{
         this.spread = spread
     }
 
-    update(tstep){
-        let spawns = Math.round(this.amount*tstep) | 1
+    update(dt){
+        let spawns = Math.round(this.amount*dt) | 1
 
         for(let i = 0; i < spawns; i++){
             let s = Vec3Factory.create(
                 (Math.random()-0.5) * this.offset, 
-                Math.random()*tstep, 
+                (Math.random()-0.5) * this.offset, 
                 (Math.random()-0.5) * this.offset, 
             )
-            Vec3.add(this.spawn, s, s)
-
             let v = Vec3Factory.create(
                 (Math.random()-0.5) * this.spread, 
                 (Math.random()-0.5) * this.spread, 
                 (Math.random()-0.5) * this.spread, 
             )
 
+            Vec3.add(this.spawn, s, s)
             let d = new Drop(s, v)
             this.drops.push(d)
         }

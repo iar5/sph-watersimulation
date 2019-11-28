@@ -2,7 +2,7 @@ import * as Vec3 from '../../lib/twgl/v3.js';
 import * as Mat4 from '../../lib/twgl/m4.js';
 
 
-export const watersimulation = (function (){
+export const simulation = (function (){
 
     const force = [0, -9.81, 0]
     const drops = []
@@ -31,9 +31,9 @@ export const watersimulation = (function (){
     
     /**
      * 
-     * @param {Number} tstep timestep
+     * @param {Number} dt timestep
      */
-    function update(tstep){ 
+    function update(dt){ 
 
     }
 
@@ -47,7 +47,7 @@ export const watersimulation = (function (){
          * transforms array vector to continous position buffer array 
          * @returns {Array} 
          */
-        getWaterDropsAsBufferArray(){
+        getPoints(){
             let result = []
             for(let drop of drops){
                 result.push(drop[0], drop[1], drop[2])

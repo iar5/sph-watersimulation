@@ -2,7 +2,7 @@ import * as twgl from '../../lib/twgl/twgl.js';
 import * as v3 from '../../lib/twgl/v3.js';
 import * as m4 from '../../lib/twgl/m4.js';
 import * as twglprimitives from '../../lib/twgl/primitives.js'
-import { watersimulation } from './watersimulation.js'
+import { simulation } from './simulation.js'
 import Stats from '../../lib/stats.js'
 
 
@@ -20,11 +20,11 @@ gl.enable(gl.CULL_FACE)
 
 // LOAD SHADER
 var pointProgram 
-const SHADER_DIR = '/src/gridbased/shader/'
+const SHADER_DIR = '/shader/'
 loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
     loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
         pointProgram = twgl.createProgramInfo(gl, [pvs, pfs]);
-        requestAnimationFrame(draw);
+        requestAnimationFrame(render);
     })
 })
 
@@ -54,15 +54,15 @@ var lasttime = 0
  * 
  * @param {Number} time timestamp
  */
-function draw(time) {
-    requestAnimationFrame(draw)
+function render(time) {
+    requestAnimationFrame(render)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     stats.begin();
 
     let timestep = (time-lasttime)/1000 
     lasttime = time
 
-    watersimulation.update(timestep)
+    simulation.update(timestep)
 
     const uniforms = {
         u_projection: projection,
@@ -71,7 +71,7 @@ function draw(time) {
     } 
     
     gl.useProgram(pointProgram.program);
-    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: watersimulation.getWaterDropsAsBufferArray()});
+    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: simulation.getPoints()});
     twgl.setUniforms(pointProgram, uniforms);
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);

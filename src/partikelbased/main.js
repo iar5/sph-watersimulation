@@ -9,22 +9,24 @@ import * as twgl from '../../lib/twgl/twgl.js';
 import * as v3 from '../../lib/twgl/v3.js';
 import * as m4 from '../../lib/twgl/m4.js';
 import * as twglprimitives from '../../lib/twgl/primitives.js'
-import { watersimulation } from './watersimulation.js'
+import { simulation } from './simulation.js'
 import Stats from '../../lib/stats.js'
 
 
 //////////////////
 //  SETUP WEBGL //
 //////////////////
-const gl = document.getElementById("canvas").getContext("webgl2")
+const canvas = document.getElementById("canvas")
+const gl = canvas.getContext("webgl2")
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 twgl.setAttributePrefix("a_")
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-gl.enable(gl.DEPTH_TEST)
-gl.enable(gl.BLEND)
-gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 gl.enable(gl.CULL_FACE)
-var lasttime = 0 // used for calculating the timestep
+gl.enable(gl.BLEND)
+gl.enable(gl.DEPTH_TEST)
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+
 
 
 //////////////////
@@ -32,14 +34,14 @@ var lasttime = 0 // used for calculating the timestep
 //////////////////
 var pointProgram 
 var diffusProgram 
-const SHADER_DIR = '/src/partikelbased/shader/'
+const SHADER_DIR = '/shader/'
 loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
     loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
         loadTextResource(SHADER_DIR+'diffus.vs', (dvs) => {
             loadTextResource(SHADER_DIR+'diffus.fs', (dfs) => {
                 pointProgram = twgl.createProgramInfo(gl, [pvs, pfs]);
                 diffusProgram = twgl.createProgramInfo(gl, [dvs, dfs]);
-                requestAnimationFrame(draw);
+                requestAnimationFrame(render);
             })
         })
     })
@@ -56,9 +58,10 @@ const far = 100
 const projection = m4.perspective(fov, aspect, near, far)
 const camera = m4.translation([0, 0, 6]) // guckt nach -z. iverse wäre welt koordinaten, eins reicht also. werden beide als view zusammengefasst
 
-
 const stats = new Stats();
 document.body.appendChild(stats.dom);
+
+var pause = false
 
 
 
@@ -81,17 +84,16 @@ let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
 
 /**
  * 
- * @param {Number} time timestamp
+ * @param {Number} time timestamp von requestAnimationFrame
  */
-function draw(time) {
-    requestAnimationFrame(draw)
+function render(time) {
+    requestAnimationFrame(render)
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    
     stats.begin();
-
-    let timestep = (time-lasttime)/1000 
-    lasttime = time
-
-    watersimulation.update(timestep)
+    
+    if(!pause) simulation.update(1/60) 
     
     const uniforms = {
         u_projection: projection,
@@ -99,19 +101,10 @@ function draw(time) {
         u_model: m4.identity() // placeholder
     } 
     
-    gl.useProgram(diffusProgram.program);
-    twgl.setUniforms(diffusProgram, uniforms);
-    twgl.setUniforms(diffusProgram, lightuniform);
-    let sphereModelMat = m4.identity();
-    let r = watersimulation.getSphere().r
-    m4.scale(sphereModelMat, v3.create(r, r, r), sphereModelMat)
-    m4.translate(sphereModelMat, watersimulation.getSphere().pos, sphereModelMat)    
-    twgl.setUniforms(diffusProgram, {u_model: sphereModelMat});
-    twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
-    twgl.drawBufferInfo(gl, sphereBufferInfo, gl.TRIANGLES);
-
+    
+    // transparency only working when order of drawing objects is correct
     gl.useProgram(pointProgram.program);
-    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: watersimulation.getWaterDropsAsBufferArray()});
+    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: simulation.getPoints()});
     twgl.setUniforms(pointProgram, uniforms);
     let waterModelMat = m4.identity();
     m4.translate(waterModelMat, [0, 0, 0], waterModelMat)    
@@ -119,24 +112,29 @@ function draw(time) {
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 
+    gl.useProgram(diffusProgram.program);
+    twgl.setUniforms(diffusProgram, uniforms);
+    twgl.setUniforms(diffusProgram, lightuniform);
+    let sphereModelMat = m4.identity();
+    let r = simulation.getSphere().r
+    m4.scale(sphereModelMat, v3.create(r, r, r), sphereModelMat)
+    m4.translate(sphereModelMat, simulation.getSphere().pos, sphereModelMat)    
+    twgl.setUniforms(diffusProgram, {u_model: sphereModelMat});
+    twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
+    twgl.drawBufferInfo(gl, sphereBufferInfo, gl.TRIANGLES);
+
     stats.end();
 }
 
 
-
 /**
- * Loads (local) textfile
- * @param {String} url 
- * @param {Callback} callback 
+ * Key listener to pause simulation
  */
-function loadTextResource(url, callback) {
-	const request = new XMLHttpRequest()
-	request.open('GET', url + '?please-dont-cache=' + Math.random(), true)
-	request.onload = function () {
-		callback(request.responseText)
-	}
-	request.send()
-}
+document.addEventListener("keydown", e => {
+    if(e.keyCode == 32){
+        pause = !pause
+    }
+})
 
 
 /**
@@ -168,6 +166,22 @@ document.onmousemove = function(e) {
     lastMouseY = newY;
 }
 
+
+/**
+ * Loads (local) textfile
+ * @param {String} url 
+ * @param {Callback} callback 
+ */
+function loadTextResource(url, callback) {
+	const request = new XMLHttpRequest()
+	request.open('GET', url + '?please-dont-cache=' + Math.random(), true)
+	request.onload = function () {
+		callback(request.responseText)
+	}
+	request.send()
+}
+
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
+
