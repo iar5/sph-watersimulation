@@ -7,6 +7,7 @@ import { Drop } from './objects/Drop.js'
 import { Sphere } from './objects/Sphere.js'
 import { Pool } from './objects/Pool.js'
 import { Emitter } from './objects/Emitter.js'
+import { SPH } from './objects/SPH.js'
 
 
 export const EXTERNAL_FORCES = [0, -9.81, 0]
@@ -14,10 +15,14 @@ export const EXTERNAL_FORCES = [0, -9.81, 0]
 export const simulation = (function (){
 
     const drops = []
+    const sph = new SPH(drops)
 
-    const pool = new Pool(Vec3.create(0, -1, 0), 2, 2, 1)
+    const pool = new Pool(Vec3.create(0, -1, 0), 2, 2, 2)
     const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
     const emitter = new Emitter(Vec3.create(0, 3, 0), drops)
+
+    let dropCube = Emitter.createDropCube(Vec3.create(0, 3, 0), 6, 12, 6, 0.1)
+    drops.push(...dropCube)
 
     /**
      * 
@@ -27,6 +32,7 @@ export const simulation = (function (){
 
         //sphere.update(dt)
         emitter.update(dt)
+        //sph.update(dt)
 
         let i = drops.length
         while (i--) {

@@ -7,9 +7,7 @@ import { EXTERNAL_FORCES } from "../simulation.js";
 export class Drop {
 
     oldpos = Vec3.create() // previous position for collision handling, dont change it beside in Drop.update()!
-    m = 0.01 // mass resp. density
-    presure = 0 // presure
-
+    m = 0.01 // mass 
 
     /**
      * @param {Vec3} p position
