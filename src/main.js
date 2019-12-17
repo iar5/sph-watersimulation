@@ -5,12 +5,12 @@
  * - 
  */
 
-import * as twgl from '../../lib/twgl/twgl.js';
-import * as v3 from '../../lib/twgl/v3.js';
-import * as m4 from '../../lib/twgl/m4.js';
-import * as twglprimitives from '../../lib/twgl/primitives.js'
+import * as twgl from '../lib/twgl/twgl.js';
+import * as v3 from '../lib/twgl/v3.js';
+import * as m4 from '../lib/twgl/m4.js';
+import * as twglprimitives from '../lib/twgl/primitives.js'
 import { simulation } from './simulation.js'
-import Stats from '../../lib/stats.js'
+import Stats from '../lib/stats.js'
 
 
 //////////////////
@@ -51,10 +51,10 @@ loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
 //////////////////
 //    CAMERA    //
 //////////////////
-const fov = 35 * Math.PI / 180
-const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
-const near = 0.001
-const far = 100
+var fov = 35 * Math.PI / 180
+var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
+var near = 0.001
+var far = 100
 const projection = m4.perspective(fov, aspect, near, far)
 const camera = m4.translation([0, 0, 6]) // guckt nach -z. iverse wäre welt koordinaten, eins reicht also. werden beide als view zusammengefasst
 
@@ -83,42 +83,51 @@ let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
 
 
 /**
- * 
+ * transparency only working when order of drawing objects is correct
  * @param {Number} time timestamp von requestAnimationFrame
  */
 function render(time) {
     requestAnimationFrame(render)
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    twgl.resizeCanvasToDisplaySize(canvas)
 
     stats.begin();
     
-    if(!pause) simulation.update(1/60) 
+    if(!pause) simulation.update() 
     
-    const uniforms = {
+    const globalUniforms = {
         u_projection: projection,
         u_view: m4.inverse(camera),
         u_model: m4.identity() // placeholder
     } 
     
-    
-    // transparency only working when order of drawing objects is correct
+    const drops = simulation.getDrops()
+    const dropsPos = []
+    for(let drop of drops){
+        dropsPos.push(drop.pos[0], drop.pos[1], drop.pos[2])
+    }
+    const dropsColor = []
+    for(let drop of drops){
+        dropsColor.push(0.1, 0.1, 1-(drop.rho/30), 1)
+    }
+
     gl.useProgram(pointProgram.program);
-    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {position: simulation.getPoints()});
-    twgl.setUniforms(pointProgram, uniforms);
+    const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+        position: { numComponents: 3, data: dropsPos },
+        color: { numComponents: 4, data: dropsColor }
+    });
+    twgl.setUniforms(pointProgram, globalUniforms);
     let waterModelMat = m4.identity();
     m4.translate(waterModelMat, [0, 0, 0], waterModelMat)    
     twgl.setUniforms(pointProgram, {u_model: waterModelMat});
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 
+    let sphere = simulation.getSphere()
     gl.useProgram(diffusProgram.program);
-    twgl.setUniforms(diffusProgram, uniforms);
+    twgl.setUniforms(diffusProgram, globalUniforms);
     twgl.setUniforms(diffusProgram, lightuniform);
     let sphereModelMat = m4.identity();
-    let r = simulation.getSphere().r
-    m4.scale(sphereModelMat, v3.create(r, r, r), sphereModelMat)
+    m4.scale(sphereModelMat, v3.create(sphere.r, sphere.r, sphere.r), sphereModelMat)
     m4.translate(sphereModelMat, simulation.getSphere().pos, sphereModelMat)    
     twgl.setUniforms(diffusProgram, {u_model: sphereModelMat});
     twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
@@ -127,6 +136,16 @@ function render(time) {
     stats.end();
 }
 
+
+/**
+ * 
+ */
+window.addEventListener("resize", e => {
+    gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
+    twgl.resizeCanvasToDisplaySize(canvas)
+    aspect = canvas.clientWidth / canvas.clientHeight    
+    m4.perspective(fov, aspect, near, far, projection)
+})
 
 /**
  * Key listener to pause simulation

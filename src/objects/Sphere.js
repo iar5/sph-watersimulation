@@ -1,7 +1,8 @@
-import * as Vec3 from "./../../../lib/twgl/v3.js";
-import * as Mat4 from "./../../../lib/twgl/m4.js";
+import * as Vec3 from "../../lib/twgl/v3.js";
+import * as Mat4 from "../../lib/twgl/m4.js";
 import { Drop } from "./Drop.js";
 import Vec3Factory from "./Vec3Factory.js";
+import { TIMESTEP } from "../simulation.js"
 
 
 export const COLLISION_OFFSET = 0.001;
@@ -16,18 +17,32 @@ export class Sphere {
         this.r = radius
     }
 
-    update(dt){
-        this.animcount += dt
+    update(){
+        this.animcount += TIMESTEP
         let x = Math.sin(this.animcount)
         this.pos[0] = x
     }
 
     /**
+     * 
+     * @param {Drop} drop 
+     */
+    collide(drop){
+        var diff = Vec3.subtract(drop.pos, this.pos)
+        var l = Vec3.length(diff)
+
+        if(l < this.r){
+            //Vec3.set(drop.pos
+        }
+    }
+
+    /**
+     * Gespiegelte Kollision über oldpos des partikels
      * Bisher nur Partikel bewegt sich in Sphere Kollision
      * TODO Sphere bewegt sich in Partikel Kollision
      * @param {Drop} drop 
      */
-    collide(drop){
+    collideCorrect(drop){
         const dist = Vec3.length(Vec3.subtract(drop.pos, this.pos) )
 
         if(dist > this.r) 

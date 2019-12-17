@@ -1,4 +1,4 @@
-import * as Vec3 from "./../../../lib/twgl/v3.js";
+import * as Vec3 from "../../lib/twgl/v3.js";
 
 /**
  * TODO
