@@ -1,77 +1,79 @@
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
 import { Drop } from "./Drop.js";
-import Vec3Factory from "./Vec3Factory.js";
-import { TIMESTEP } from "../simulation.js"
+import { isKeyHold } from "../../lib/keyhold.js"
 
-
-export const COLLISION_OFFSET = 0.001;
-export const BOUNCE = 0.3;
+const BOUNCE = 0.2
+const COLLISION_OFFSET = 0.001
+const ANIM_SPEED = 0.01
+const ANIM_RANGE = 0.5
 
 export class Sphere {
-
-    animcount = 0
 
     constructor(pos, radius){
         this.pos = pos
         this.r = radius
+        this.color = [1, 0, 0, 1]
+        this._animcount = 0
     }
 
     update(){
-        this.animcount += TIMESTEP
-        let x = Math.sin(this.animcount)
-        this.pos[0] = x
+        this._animcount += ANIM_SPEED
+        this.pos[0] -= Math.sin(this._animcount-ANIM_SPEED) * ANIM_RANGE // zurück setzen
+        this.pos[0] += Math.sin(this._animcount) * ANIM_RANGE
     }
 
     /**
-     * 
+     * Ansatz: Sphere bewegt sich schiebt Partikel weg, Kraft geht in Normalenrichtung 
      * @param {Drop} drop 
      */
     collide(drop){
-        var diff = Vec3.subtract(drop.pos, this.pos)
-        var l = Vec3.length(diff)
+        let diff = Vec3.subtract(drop.pos, this.pos)
+        let l = Vec3.length(diff)
+        
+        if(l < this.r + COLLISION_OFFSET){
 
-        if(l < this.r){
-            //Vec3.set(drop.pos
+            Vec3.normalize(diff, diff)
+            Vec3.mulScalar(diff, this.r, diff)
+            Vec3.add(diff, this.pos, diff)
+            Vec3.copy(diff, drop.pos)
+            
+            // add force instead of multiplying the reverse
+            Vec3.mulScalar(drop.v, -BOUNCE, drop.v)
         }
     }
 
     /**
-     * Gespiegelte Kollision über oldpos des partikels
-     * Bisher nur Partikel bewegt sich in Sphere Kollision
-     * TODO Sphere bewegt sich in Partikel Kollision
+     * (Korrekte) Kollisionsbehandlung für wenn(!) Partikel auf/in Sphere fällt 
+     * Gespiegelte Kollision über oldpos des Partikels
      * @param {Drop} drop 
      */
-    collideCorrect(drop){
-        const dist = Vec3.length(Vec3.subtract(drop.pos, this.pos) )
+    collide2(drop){
+        let dist = Vec3.length(Vec3.subtract(drop.pos, this.pos) )
 
-        if(dist > this.r) 
-            return
+        if(dist > this.r) return
 
-        const dir = Vec3.subtract(drop.pos, drop.oldpos)
+        let dir = Vec3.subtract(drop.pos, drop.oldpos)
         Vec3.normalize(dir, dir)
 
-        const hit = Sphere.intersectRaySphere(drop.pos, dir, this.pos, this.r+COLLISION_OFFSET)
+        let hit = Sphere.intersectRaySphere(drop.pos, dir, this.pos, this.r+COLLISION_OFFSET)
         
-        if(!hit)  
-            return  
+        if(!hit) return  
                
-        const n = Vec3.subtract(hit, this.pos)
+        let n = Vec3.subtract(hit, this.pos)
         Vec3.normalize(n, n)
 
-        const reflect = Vec3.mulScalar(n, 2*Vec3.dot(dir, n))
+        let reflect = Vec3.mulScalar(n, 2*Vec3.dot(dir, n))
         Vec3.subtract(dir, reflect, reflect)
         
-        const out = Vec3.add(dir, reflect)
+        let out = Vec3.add(dir, reflect)
         Vec3.normalize(out, out) // physikalisch nicht begründet aber sieht richtig aus
         
-        const speed = Vec3.length(drop.v)
+        let speed = Vec3.length(drop.v)
         Vec3.mulScalar(out, speed*BOUNCE, out)
 
         Vec3.copy(hit, drop.pos)
         Vec3.copy(out, drop.v)
-
-        Vec3Factory.add(dir, hit, n, reflect, out)
     }
 
 
@@ -85,24 +87,22 @@ export class Sphere {
      * @param {Vec} intersection point
      */
     static intersectRaySphere(p, d, s, r){
-        var m = Vec3.subtract(p, s)
-        var b = Vec3.dot(m, d);
-        var c = Vec3.dot(m, m) - r*r;
+        let m = Vec3.subtract(p, s)
+        let b = Vec3.dot(m, d);
+        let c = Vec3.dot(m, m) - r*r;
 
         // Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
-        if (c > 0 && b > 0) 
-            return 
+        if (c > 0 && b > 0) return 
 
-        var discr = b*b - c;
+        let discr = b*b - c;
 
         // A negative discriminant corresponds to ray missing sphere
-        if (discr < 0) 
-            return 
+        if (discr < 0) return 
 
         // Ray now found to intersect sphere, compute smallest t value of intersection 
-        var t = -b - Math.sqrt(discr);
+        let t = -b - Math.sqrt(discr);
 
-        var out = Vec3.mulScalar(d, t)
+        let out = Vec3.mulScalar(d, t)
         Vec3.add(p, out, out)
         return out    
     }

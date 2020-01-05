@@ -1,8 +1,7 @@
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
 
-const BOUNCE = 0.5
-const FRICTION = 0.1
+const BOUNCE = 0.2
 const COLLISION_OFFSET = 0.0001;
 
 export class Pool {
@@ -13,14 +12,14 @@ export class Pool {
         this.length = length
         this.pos = pos
     }
-
-    update(){
-        
-    }
-
-
+    
     /**
-     * einfache kollision von innen nach außen in nem 1x1x1 würfel
+     * Einfache Kollision von innen nach außen in nem 1x1x1 Würfel
+     * Wenn eine Komponente eines Partikels (x,y,z) Wand durchdringt wird diese auf Oberfläche zurück gesetzt
+     * und die entsprechende Komponente der Velocity geflipt.
+     * Funktioniert in 2D wie Spiegelung in 3D nicht ganz korrekt aber vorerst ausreichend
+     * .. weil bei der Durchdringung nur nur eine Komponente die Bounding durchringt sondern mehrere, 
+     * die Kollision aber nur über eine korrigiert wird
      * @param {Drop} drop 
      */
     collide(drop){
@@ -28,11 +27,11 @@ export class Pool {
         let y = this.pos[1]
         let z = this.pos[2]
 
-        const top = y+this.height/2
+        /*const top = y+this.height/2
         if(drop.pos[1] >= top){
             drop.pos[1] = top-COLLISION_OFFSET
             drop.v[1] *= -BOUNCE
-        }
+        }*/
 
         const bottom = y-this.height/2
         if(drop.pos[1] <= bottom){

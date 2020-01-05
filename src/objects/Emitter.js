@@ -1,6 +1,5 @@
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
-import Vec3Factory from './Vec3Factory.js'
 import { Drop } from './Drop.js'
 
 
@@ -12,26 +11,29 @@ export class Emitter{
      * @param {Array} drops data destination
      * @param {Number} amount particles per second
      * @param {Number} offset spawn offset from position
-     * @param {Number} spread initial velocity in a randome direction
+     * @param {Number} spread additional initial velocity in a randome direction
+     * @param {Vec3} velocity initial velocity 
      */
-    constructor(spawn, drops, amount=1, offset=0.3, spread=0.01){
+    constructor(spawn, drops, amount=1, offset=0.3, spread=0.01, velocity=Vec3.create()){
         this.spawn = spawn
         this.drops = drops
         this.amount = amount
         this.offset = offset
         this.spread = spread
+        this.velocity = velocity
     }
 
     update(){
-        let spawns = Math.round(this.amount) | 1
         let go = new RandomeGenerator(-this.offset, this.offset)
         let gv = new RandomeGenerator(-this.spread, this.spread)
 
-        for(let i = 0; i < spawns; i++){
-            let s = Vec3Factory.create(go.r(), go.r(), go.r()) 
-            let v = Vec3Factory.create(gv.r(), gv.r(), gv.r())
+        for(let i = 0; i < this.amount; i++){
+            let s = Vec3.create(go.r(), go.r(), go.r()) 
+            let v = Vec3.create(gv.r(), gv.r(), gv.r())
     
             Vec3.add(this.spawn, s, s)
+            Vec3.add(this.velocity, v, v)
+            
             let d = new Drop(s, v)
             this.drops.push(d)
         }
@@ -73,6 +75,6 @@ export class Emitter{
 
 function RandomeGenerator(start, end){
     return { 
-        r(){ return start + Math.random() * end-start }
+        r() { return start + Math.random() * end-start }
     }
 }

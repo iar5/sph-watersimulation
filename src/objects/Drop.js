@@ -1,6 +1,5 @@
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
-import Vec3Factory from "./Vec3Factory.js";
 
 export class Drop {
 

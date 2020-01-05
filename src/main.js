@@ -13,19 +13,18 @@ import { simulation } from './simulation.js'
 import Stats from '../lib/stats.js'
 
 
+
 //////////////////
 //  SETUP WEBGL //
 //////////////////
 const canvas = document.getElementById("canvas")
 const gl = canvas.getContext("webgl2")
 twgl.resizeCanvasToDisplaySize(gl.canvas)
-twgl.setAttributePrefix("a_")
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.enable(gl.CULL_FACE)
 gl.enable(gl.BLEND)
 gl.enable(gl.DEPTH_TEST)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
 
 
 
@@ -46,6 +45,7 @@ loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
         })
     })
 })
+
 
 
 //////////////////
@@ -75,15 +75,18 @@ const lightuniform = {
 }
 
 
+
 //////////////////
 //    SPHERE    //
 //////////////////
+twgl.setAttributePrefix("a_")
 let sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
+twgl.setAttributePrefix("")
 
 
 
 /**
- * transparency only working when order of drawing objects is correct
+ * transparency is only working when order of drawing objects is correct
  * @param {Number} time timestamp von requestAnimationFrame
  */
 function render(time) {
@@ -100,6 +103,7 @@ function render(time) {
         u_model: m4.identity() // placeholder
     } 
     
+    
     const drops = simulation.getDrops()
     const dropsPos = []
     for(let drop of drops){
@@ -109,27 +113,31 @@ function render(time) {
     for(let drop of drops){
         dropsColor.push(0.1, 0.1, 1-(drop.rho/30), 1)
     }
-
     gl.useProgram(pointProgram.program);
     const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-        position: { numComponents: 3, data: dropsPos },
-        color: { numComponents: 4, data: dropsColor }
-    });
-    twgl.setUniforms(pointProgram, globalUniforms);
+        a_position: { numComponents: 3, data: dropsPos },
+        a_color: { numComponents: 4, data: dropsColor }
+    });  
     let waterModelMat = m4.identity();
-    m4.translate(waterModelMat, [0, 0, 0], waterModelMat)    
-    twgl.setUniforms(pointProgram, {u_model: waterModelMat});
+    m4.translate(waterModelMat, [0, 0, 0], waterModelMat)  
+    twgl.setUniforms(pointProgram, globalUniforms);
+    twgl.setUniforms(pointProgram, {
+        u_model: waterModelMat
+    });
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 
     let sphere = simulation.getSphere()
+    let sphereModelMat = m4.identity();
+    m4.translate(sphereModelMat, simulation.getSphere().pos, sphereModelMat)   
+    m4.scale(sphereModelMat, v3.create(sphere.r, sphere.r, sphere.r), sphereModelMat)
     gl.useProgram(diffusProgram.program);
     twgl.setUniforms(diffusProgram, globalUniforms);
     twgl.setUniforms(diffusProgram, lightuniform);
-    let sphereModelMat = m4.identity();
-    m4.scale(sphereModelMat, v3.create(sphere.r, sphere.r, sphere.r), sphereModelMat)
-    m4.translate(sphereModelMat, simulation.getSphere().pos, sphereModelMat)    
-    twgl.setUniforms(diffusProgram, {u_model: sphereModelMat});
+    twgl.setUniforms(diffusProgram, {
+        u_model: sphereModelMat,
+        u_color: sphere.color
+    });
     twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
     twgl.drawBufferInfo(gl, sphereBufferInfo, gl.TRIANGLES);
 
