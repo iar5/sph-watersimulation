@@ -111,8 +111,9 @@ function render(time) {
     }
     const dropsColor = []
     for(let drop of drops){
-        dropsColor.push(0.1, 0.1, 1-(drop.rho/30), 1)
+        dropsColor.push(0.1, 0.1, 1-(drop.rho-1.47)*5, 1)
     }
+    
     gl.useProgram(pointProgram.program);
     const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         a_position: { numComponents: 3, data: dropsPos },

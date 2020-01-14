@@ -21,8 +21,9 @@ const VISC = 0.5 // Ns/m^2
 
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
-const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 8, 12, 8, PARTICLE_RADIUS*2)
+const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_RADIUS*2)
 
+// predeclare, -initialize and -calculate variables for optimization
 const H = PARTICLE_RADIUS*2 // kernel radius
 const HSQ = H*H
 const POLY6 = 315/(65*Math.PI*Math.pow(H,9))
@@ -51,7 +52,7 @@ function update(){
     sphere.update()
     //emitter.update()
 
-    // SPH: density (rho) at particle positions
+    // density (rho) at particle positions
     for(let di of drops){
         di.rho = 0
         for(let dj of drops){
@@ -64,7 +65,7 @@ function update(){
         di.p = GAS_CONST * (di.rho - REST_DENS);
     }
 
-    // SPH: pressure and visc
+    // Navier Stokes: pressure and visc force contributions
     for(let pi of drops){
         Vec3.reset(f)
         Vec3.reset(fgrav)
@@ -78,23 +79,20 @@ function update(){
             let r = Vec3.length(rij)
 
             if(r < H){
-                // compute pressure force contribution
-                //fpress += -rij.normalized() * MASS * (pi.p+pj.p)/(2.f*pj.rho) * SPIKY_GRAD * pow(H-r,2.f);
+                //fpress += - MASS * SPIKY_GRAD * rij.normalized() * (pi.p+pj.p)/(2.f*pj.rho) * pow(H-r,2.f);
                 Vec3.normalize(rij, rij)
-                Vec3.mulScalar(rij, - PARTICLE_MASS * (pi.p + pj.p)/(2*pj.rho) * SPIKY_GRAD * Math.pow(H-r, 2), rij)
+                Vec3.mulScalar(rij, (pi.p + pj.p)/(2*pj.rho) * Math.pow(H-r, 2), rij)
                 Vec3.add(fpress, rij, fpress)
 
-                // compute viscosity force contribution
-                //fvisc += VISC*MASS*(pj.v - pi.v)/pj.rho * VISC_LAP*(H-r);
-                let t1 = VISC * PARTICLE_MASS 
-                let t2 = 1/pj.rho * VISC_LAP * (H-r)
+                //fvisc += VISC * MASS * VISC_LAP * (pj.v-pi.v) / pj.rho * (H-r);
                 Vec3.subtract(pj.v, pi.v, rvij)
-
-                Vec3.mulScalar(rvij, t1, rvij)
-                Vec3.mulScalar(rvij, t2, rvij)
+                Vec3.mulScalar(rvij, 1/pj.rho * (H-r), rvij)
                 Vec3.add(fvisc, rvij, fvisc)
             }
         }
+        // optimiszation
+        Vec3.mulScalar(fpress, - PARTICLE_MASS * SPIKY_GRAD, fpress)
+        Vec3.mulScalar(fvisc, VISC * PARTICLE_MASS * VISC_LAP, fvisc)
 
         Vec3.mulScalar(EXTERNAL_FORCES, pi.rho, fgrav)
         Vec3.add(f, fgrav, f)
