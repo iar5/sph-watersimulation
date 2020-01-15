@@ -15,6 +15,18 @@ import Stats from '../lib/stats.js'
 
 
 //////////////////
+//     GUI      //
+//////////////////
+const stats = new Stats();
+document.body.appendChild(stats.dom);
+
+var pause = false
+var framecount = 0
+var infoEl = document.getElementById("myinfo")
+
+
+
+//////////////////
 //  SETUP WEBGL //
 //////////////////
 const canvas = document.getElementById("canvas")
@@ -58,11 +70,6 @@ var far = 100
 const projection = m4.perspective(fov, aspect, near, far)
 const camera = m4.translation([0, 0, 6]) // guckt nach -z. iverse wäre welt koordinaten, eins reicht also. werden beide als view zusammengefasst
 
-const stats = new Stats();
-document.body.appendChild(stats.dom);
-
-var pause = false
-
 
 
 //////////////////
@@ -92,6 +99,9 @@ twgl.setAttributePrefix("")
 function render(time) {
     requestAnimationFrame(render)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+    framecount++
+    infoEl.innerHTML = framecount
 
     stats.begin();
     
