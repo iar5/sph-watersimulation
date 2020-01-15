@@ -45,7 +45,7 @@ export class Emitter{
      * @param {Number} amountX 
      * @param {Number} amountY 
      * @param {Number} amountZ 
-     * @param {Number} distance abstand zwischen zwei drops
+     * @param {Number} distance abstand zwischen zwei drop centren (oder auch durchmesser eines drops)
      * @returns {Array} drops
      */
     static createDropCube(pos, amountX, amountY, amountZ, distance){

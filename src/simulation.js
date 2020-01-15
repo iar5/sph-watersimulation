@@ -1,8 +1,6 @@
 /**
  * @author Tom Wendland
  * SPH simulation solver
- * Predefined calculations and vector for optimization
- * parameters: https://scicomp.stackexchange.com/questions/14450/how-to-get-proper-parameters-of-sph-simulation
  * */
 
 import * as Vec3 from '../lib/twgl/v3.js'
@@ -13,22 +11,25 @@ import { Emitter } from './objects/Emitter.js'
 
 
 const TIMESTEP = 0.00002 // dt
-
 const EXTERNAL_FORCES = [0, -9.81*10000, 0] // m/s
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
 const VISC = 0.5 // Ns/m^2
-
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
 const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_RADIUS*2)
 
-// predeclare, -initialize and -calculate variables for optimization
+// optimization: precalculate constant values 
 const H = PARTICLE_RADIUS*2 // kernel radius
 const HSQ = H*H
 const POLY6 = 315/(65*Math.PI*Math.pow(H,9))
 const VISC_LAP = 45/(Math.PI*Math.pow(H,6))
 const SPIKY_GRAD = -45/(Math.PI*Math.pow(H,6))
+const MMS = - PARTICLE_MASS * SPIKY_GRAD
+const MVL = PARTICLE_MASS * VISC * VISC_LAP
+const MP = PARTICLE_MASS * POLY6
+
+// optimization: predeclare vec3s and reuse them in code
 const rij = Vec3.create() // difference between drop i and j
 const rvij = Vec3.create() // difference in velocity between drop i and j
 const fpress = Vec3.create() // pressure force
@@ -53,19 +54,20 @@ function update(){
     //emitter.update()
 
     // density (rho) at particle positions
+    // pressure (p) at particle positions via gas equation
     for(let di of drops){
         di.rho = 0
         for(let dj of drops){
             let r2 = Vec3.distanceSq(di.pos, dj.pos)
             if(r2 < HSQ){
-                di.rho += PARTICLE_MASS * POLY6 * Math.pow(HSQ - r2, 3)
+                // rho += PARTICLE_MASS * POLY6 * pow(HSQ-r2, 3)
+                di.rho += MP * Math.pow(HSQ-r2, 3)
             }
         }
-        // pressure (p) at particle positions via gas equation
         di.p = GAS_CONST * (di.rho - REST_DENS);
     }
 
-    // Navier Stokes: pressure and visc force contributions
+    // Navier Stokes pressure and visc force contributions
     for(let pi of drops){
         Vec3.reset(f)
         Vec3.reset(fgrav)
@@ -91,8 +93,8 @@ function update(){
             }
         }
         // optimiszation
-        Vec3.mulScalar(fpress, - PARTICLE_MASS * SPIKY_GRAD, fpress)
-        Vec3.mulScalar(fvisc, VISC * PARTICLE_MASS * VISC_LAP, fvisc)
+        Vec3.mulScalar(fpress, MMS, fpress)
+        Vec3.mulScalar(fvisc, MVL, fvisc)
 
         Vec3.mulScalar(EXTERNAL_FORCES, pi.rho, fgrav)
         Vec3.add(f, fgrav, f)
