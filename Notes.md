@@ -11,6 +11,7 @@
 #### Erweiterungen 
 - neuer wasserqube droppen bei tastendruck
 - trichter bzw platte mit loch oder so implementieren 
+- 3d terrain
 - leapfog anstatt euler https://gamedev.stackexchange.com/questions/96963/leapfrog-integration-vs-euler-integrator
 
 

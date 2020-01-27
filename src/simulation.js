@@ -22,10 +22,6 @@ const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_
 // optimization: precalculate constant values 
 const H = PARTICLE_RADIUS*2 // kernel radius
 const H2 = H*H
-const POLY6 = 315/(65*Math.PI*Math.pow(H,9))
-const SPIKY_GRAD = -45/(Math.PI*Math.pow(H,6))
-//const VISC_LAP = 45/(Math.PI*Math.pow(H,6))
-const VISC_LAP =15/(2*Math.PI*Math.pow(H,3))
 
 // optimization: predeclare vec3s and reuse them in code
 const rij = Vec3.create() // difference between drop i and j
@@ -33,7 +29,7 @@ const rvij = Vec3.create() // difference in velocity between drop i and j
 const fpress = Vec3.create() // pressure force
 const fvisc = Vec3.create() // viscosity force
 const fgrav = Vec3.create() // grav force
-const f = Vec3.create() // sum force
+const f = Vec3.create() // force sum
 const v = Vec3.create() // velocity
 const x = Vec3.create() // position
 
@@ -86,7 +82,6 @@ function update(){
 
                 //fvisc += VISC * MASS * (pj.v-pi.v) / pj.rho * W;
                 Vec3.subtract(pj.v, pi.v, rvij)
-                //Vec3.mulScalar(rvij, VISC * PARTICLE_MASS * 1/pj.rho * visc2(r), rvij)
                 Vec3.mulScalar(rvij, VISC * PARTICLE_MASS * 1/pj.rho * visc(r), rvij)
                 Vec3.add(fvisc, rvij, fvisc)
             }
@@ -118,6 +113,10 @@ function update(){
 }
 
 
+const POLY6 = 315/(65*Math.PI*Math.pow(H,9))
+const SPIKY_GRAD = -45/(Math.PI*Math.pow(H,6))
+const VISC_LAP = 45/(Math.PI*Math.pow(H,6))
+
 function poly6(r2){
     return POLY6 * Math.pow(H2-r2, 3)
 }
@@ -127,10 +126,6 @@ function spiky(r){
 }
 
 function visc(r){
-    return VISC_LAP * (-r*r*r/(2*H*r) + r*r/(H2) + H/(2*r) - 1)
-}
-
-function visc2(r){
     return VISC_LAP * (H-r)
 }
 
