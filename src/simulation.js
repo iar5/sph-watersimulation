@@ -1,6 +1,7 @@
 /**
  * @author Tom Wendland
  * SPH simulation solver
+ * Ziel: Berechnen von auf Partikel wirkende Kraft (Collision und numerikale Integration gehören eigentlich nicht dazu)
  * */
 
 import * as Vec3 from '../lib/twgl/v3.js'
@@ -8,6 +9,7 @@ import { Drop } from './objects/Drop.js'
 import { Sphere } from './objects/Sphere.js'
 import { Pool } from './objects/Pool.js'
 import { Emitter } from './objects/Emitter.js'
+import { HashGrid } from './objects/HashGrid.js'
 
 
 const TIMESTEP = 0.00002 // dt
@@ -33,9 +35,16 @@ const f = Vec3.create() // force sum
 const v = Vec3.create() // velocity
 const x = Vec3.create() // position
 
+
+/**
+ * OBJECTS
+ * 
+ */
 const pool = new Pool(Vec3.create(), 2, 3, 1)
 const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
 const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 1, 0.5, 0, Vec3.create(300, 0, 0))
+const hashGrid = new HashGrid(pool.width, pool.height, pool.depth, PARTICLE_RADIUS*4)
+
 
 
 /**

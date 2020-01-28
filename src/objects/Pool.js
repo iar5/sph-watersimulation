@@ -6,10 +6,17 @@ const COLLISION_OFFSET = 0.0001;
 
 export class Pool {
     
-    constructor(pos, width, height, length){
+    /**
+     * 
+     * @param {Number} pos 
+     * @param {Number} width 
+     * @param {Number} height 
+     * @param {Number} depth 
+     */
+    constructor(pos, width, height, depth){
         this.width = width
         this.height = height
-        this.length = length
+        this.depth = depth
         this.pos = pos
     }
     
@@ -51,13 +58,13 @@ export class Pool {
             drop.v[0] *= -BOUNCE
         }
 
-        const back = z-this.length/2;
+        const back = z-this.depth/2;
         if(drop.pos[2] <= back){
             drop.pos[2] = back+COLLISION_OFFSET
             drop.v[2] *= -BOUNCE
         }
 
-        const front = z+this.length/2;
+        const front = z+this.depth/2;
         if(drop.pos[2] >= front){
             drop.pos[2] = front-COLLISION_OFFSET
             drop.v[2] *= -BOUNCE
