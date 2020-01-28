@@ -1,8 +1,8 @@
 /**
  * @author Tom Wendland
  * 
- * http://www.hugi.scene.org/online/coding/hugi%2032%20-%20coding%20corner%20jezeus%20hash%20tables%20for%20physical%20based%20simulations.htm * 
- *
+ * http://www.hugi.scene.org/online/coding/hugi%2032%20-%20coding%20corner%20jezeus%20hash%20maps%20for%20physical%20based%20simulations.htm * 
+ * 
  * Vorgehen
  * - Alle Positionen in einer Zelle auf gleiche Nummer hashen
  * - Map<Hash, Array<Drops>>
@@ -17,7 +17,7 @@
 
 export default class HashGrid{
     
-    table = new Map()
+    map = new Map()
 
     /**
      * 
@@ -32,26 +32,32 @@ export default class HashGrid{
         let ex = Math.floor(x/this.gridSize)
         let ey = Math.floor(y/this.gridSize)
         let ez = Math.floor(z/this.gridSize)
-        return (73856093 * ex + 19349663 * ey + 83492791 * ez)
+        return (ex*73856093 + ey*19349663 + ez*83492791)
+    }
+
+    decode(){
+        // https://www.gamedev.net/forums/topic.asp?topic_id=567378
+        console.log("HashGrid.decode() not implemented yet");
+        
     }
 
     add(obj, x, y, z){
         let hash = this.encode(x, y, z)
 
-        if(this.table.has(hash)){
-            let arr = this.table.get(hash)
+        if(this.map.has(hash)){
+            let arr = this.map.get(hash)
             arr.push(obj)
         }
         else{  
             let arr = []
             arr.push(obj)
-            this.table.set(hash, arr)          
+            this.map.set(hash, arr)          
         }              
     } 
 
     get(x, y, z){
         let hash = this.encode(x, y, z)
-        return this.table.get(hash)
+        return this.map.get(hash)
     }
 
     getEntriesAndNeighbours(x, y, z){
@@ -68,6 +74,6 @@ export default class HashGrid{
     }
 
     clear(){
-        this.table.clear()
+        this.map.clear()
     }
 }

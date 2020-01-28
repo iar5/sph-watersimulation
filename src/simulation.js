@@ -55,6 +55,11 @@ const hashGrid = new HashGrid(H)
 function update(){ 
 
     sphere.update()
+    
+    for(let p of drops){
+        pool.collide(p)
+        sphere.collide(p)
+    }
 
     hashGrid.clear()
     for(let p of drops){
@@ -72,48 +77,46 @@ function update(){
                 pi.rho += PARTICLE_MASS * poly6(r2)
             }
         }
-        pi.p = GAS_CONST * (pi.rho - REST_DENS);
+        pi.p = GAS_CONST * (pi.rho - REST_DENS)
     }
 
-    // Navier Stokes pressure and visc force contributions
-    for(let pi of drops){
-        Vec3.reset(f)
-        Vec3.reset(fgrav)
-        Vec3.reset(fpress)
-        Vec3.reset(fvisc)
+    // Navier Stokes pressure and visc force contributions for each cell
+    hashGrid.map.forEach((cell, key) => {
+        let cellpos = cell[0].pos // zu faul zum position encoden, stattdessen einfach pos von einem element aus der zelle nehmen
+        let collisions = hashGrid.getEntriesAndNeighbours(cellpos[0], cellpos[1], cellpos[2]) 
 
-        let collisiondrops = hashGrid.getEntriesAndNeighbours(pi.pos[0], pi.pos[1], pi.pos[2]) 
-        for(let pj of collisiondrops){
-            if(pi === pj) continue
-
-            Vec3.subtract(pj.pos, pi.pos, rij)
-            let r = Vec3.length(rij)
-
-            if(r < H){
-                //fpress += - MASS * rij.normalized() * (pi.p+pj.p)/(2.f*pj.rho) * W;
-                Vec3.normalize(rij, rij)
-                Vec3.mulScalar(rij, - PARTICLE_MASS * (pi.p + pj.p)/(2*pj.rho) * spiky(r), rij)
-                Vec3.add(fpress, rij, fpress)
-
-                //fvisc += VISC * MASS * (pj.v-pi.v) / pj.rho * W;
-                Vec3.subtract(pj.v, pi.v, rvij)
-                Vec3.mulScalar(rvij, VISC * PARTICLE_MASS * 1/pj.rho * visc(r), rvij)
-                Vec3.add(fvisc, rvij, fvisc)
+        for(let pi of cell){
+            Vec3.reset(f)
+            Vec3.reset(fgrav)
+            Vec3.reset(fpress)
+            Vec3.reset(fvisc)
+        
+            for(let pj of collisions){
+                if(pi === pj) continue
+    
+                Vec3.subtract(pj.pos, pi.pos, rij)
+                let r = Vec3.length(rij)
+    
+                if(r < H){
+                    //fpress += - MASS * rij.normalized() * (pi.p+pj.p)/(2.f*pj.rho) * W;
+                    Vec3.normalize(rij, rij)
+                    Vec3.mulScalar(rij, - PARTICLE_MASS * (pi.p + pj.p)/(2*pj.rho) * spiky(r), rij)
+                    Vec3.add(fpress, rij, fpress)
+    
+                    //fvisc += VISC * MASS * (pj.v-pi.v) / pj.rho * W;
+                    Vec3.subtract(pj.v, pi.v, rvij)
+                    Vec3.mulScalar(rvij, VISC * PARTICLE_MASS * 1/pj.rho * visc(r), rvij)
+                    Vec3.add(fvisc, rvij, fvisc)
+                }
             }
+
+            Vec3.mulScalar(EXTERNAL_FORCES, pi.rho, fgrav)
+            Vec3.add(f, fgrav, f)
+            Vec3.add(f, fpress, f)
+            Vec3.add(f, fvisc, f)
+            Vec3.copy(f, pi.f)
         }
-
-        Vec3.mulScalar(EXTERNAL_FORCES, pi.rho, fgrav)
-        Vec3.add(f, fgrav, f)
-        Vec3.add(f, fpress, f)
-        Vec3.add(f, fvisc, f)
-        Vec3.copy(f, pi.f)
-    }
-
-    // collisions
-    for(let p of drops){
-        pool.collide(p)
-        sphere.collide(p)
-    }
+    })
 
     // numerical integration forward euler
     for(let p of drops){
@@ -135,11 +138,9 @@ const VISC_LAP = 45/(Math.PI*Math.pow(H,6))
 function poly6(r2){
     return POLY6 * Math.pow(H2-r2, 3)
 }
-
 function spiky(r){
     return SPIKY_GRAD * Math.pow(H-r, 2)
 }
-
 function visc(r){
     return VISC_LAP * (H-r)
 }

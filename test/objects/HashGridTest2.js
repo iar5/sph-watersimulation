@@ -18,3 +18,5 @@ let e = hashGrid.get(k[0], k[1], k[2])
 console.log(e)
 let a = hashGrid.getEntriesAndNeighbours(k[0], k[1], k[2])
 console.log(a)
+
+
