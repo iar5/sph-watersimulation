@@ -5,11 +5,11 @@
  * */
 
 import * as Vec3 from '../lib/twgl/v3.js'
-import { Drop } from './objects/Drop.js'
-import { Sphere } from './objects/Sphere.js'
-import { Pool } from './objects/Pool.js'
-import { Emitter } from './objects/Emitter.js'
-import { HashGrid } from './objects/HashGrid.js'
+import Drop from './objects/Drop.js'
+import Sphere from './objects/Sphere.js'
+import Pool from './objects/Pool.js'
+import Emitter from './objects/Emitter.js'
+import HashGrid from './objects/HashGrid.js'
 
 
 const TIMESTEP = 0.00002 // dt
@@ -17,6 +17,7 @@ const EXTERNAL_FORCES = [0, -9.81*10000, 0] // m/s
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
 const VISC = 0.5 // Ns/m^2
+
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
 const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_RADIUS*2)
@@ -43,7 +44,7 @@ const x = Vec3.create() // position
 const pool = new Pool(Vec3.create(), 2, 3, 1)
 const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
 const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 1, 0.5, 0, Vec3.create(300, 0, 0))
-const hashGrid = new HashGrid(pool.width, pool.height, pool.depth, PARTICLE_RADIUS*4)
+const hashGrid = new HashGrid(H)
 
 
 
@@ -54,20 +55,24 @@ const hashGrid = new HashGrid(pool.width, pool.height, pool.depth, PARTICLE_RADI
 function update(){ 
 
     sphere.update()
-    //emitter.update()
+
+    hashGrid.clear()
+    for(let p of drops){
+        hashGrid.add(p, p.pos[0], p.pos[1], p.pos[2])
+    }    
 
     // density (rho) at particle positions
     // pressure (p) at particle positions via gas equation
-    for(let di of drops){
-        di.rho = 0
-        for(let dj of drops){
-            let r2 = Vec3.distanceSq(di.pos, dj.pos)
+    for(let pi of drops){
+        pi.rho = 0
+        for(let pj of drops){
+            let r2 = Vec3.distanceSq(pi.pos, pj.pos)
             if(r2 < H2){
                 // rho += PARTICLE_MASS * W
-                di.rho += PARTICLE_MASS * poly6(r2)
+                pi.rho += PARTICLE_MASS * poly6(r2)
             }
         }
-        di.p = GAS_CONST * (di.rho - REST_DENS);
+        pi.p = GAS_CONST * (pi.rho - REST_DENS);
     }
 
     // Navier Stokes pressure and visc force contributions
@@ -77,7 +82,8 @@ function update(){
         Vec3.reset(fpress)
         Vec3.reset(fvisc)
 
-        for(let pj of drops){
+        let collisiondrops = hashGrid.getEntriesAndNeighbours(pi.pos[0], pi.pos[1], pi.pos[2]) 
+        for(let pj of collisiondrops){
             if(pi === pj) continue
 
             Vec3.subtract(pj.pos, pi.pos, rij)

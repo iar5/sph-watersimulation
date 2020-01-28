@@ -1,7 +1,7 @@
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
 
-export class Drop {
+export default class Drop {
 
     // following values do not belong to the particle directly, but to the measuring point at particle position
     f = Vec3.create()

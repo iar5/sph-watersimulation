@@ -1,99 +1,72 @@
 /**
  * @author Tom Wendland
  * 
- * https://www.gamedev.net/forums/topic.asp?topic_id=567378
- * 
+ * http://www.hugi.scene.org/online/coding/hugi%2032%20-%20coding%20corner%20jezeus%20hash%20tables%20for%20physical%20based%20simulations.htm * 
+ *
  * Vorgehen
- * - Position auf Nummer hashen
- * - Hash Table Mit Hash:[partikels]
- * - Für alle Tabelleneinträge dann SPH mit den beinhalteten Partikeln + deren 26 Nachbarvoxeln
+ * - Alle Positionen in einer Zelle auf gleiche Nummer hashen
+ * - Map<Hash, Array<Drops>>
+ * - Für alle Tabelleneinträge dann SPH mit den beinhalteten Partikeln + deren 26 NachbarZellen
  * 
- * Notes
- * - Duplikate nicht möglich da unique hash
- * - max integer oder sowas wird nicht beachtet
+ * Probleme, Hinweise
+ * - Max integer oder sowas wird nicht beachtet
+ * - Wird negativ beachtet?
  */
 
 
-const RANGE = [-1, 0, 1] // für neighbour loop später, performance
 
-export class HashGrid{
+export default class HashGrid{
     
     table = new Map()
 
     /**
      * 
-     * @param {Number} width 
-     * @param {Number} height 
-     * @param {Number} depth 
      * @param {Number} cell_size mindestens partikel durchmesser      
      */
-    constructor(width, height, depth, cell_size) {
-        this.W = width
-        this.H = height
-        this.D = depth
+    constructor(cell_size) {
         this.gridSize = cell_size 
+        this.iterRange = [-cell_size, 0, cell_size]
     }
 
     encode(x, y, z){
-        let ex = x/W
-        let ey = y/H
-        let ez = z/D
-        return ex + (ey * W) + (ez * W * H)
+        let ex = Math.floor(x/this.gridSize)
+        let ey = Math.floor(y/this.gridSize)
+        let ez = Math.floor(z/this.gridSize)
+        return (73856093 * ex + 19349663 * ey + 83492791 * ez)
     }
-    decode(hash){
-        let ex = hash % (W*H) % W 
-        let ey = (hash % (W*H)) / W 
-        let ez = hash / (W * H)
 
-        let x = (ex * gridSize) + (gridSize * 0.5) 
-        let y = (ey * gridSize) + (gridSize * 0.5) 
-        let z = (ez * gridSize) + (gridSize * 0.5) 
-
-        return [x, y, z]
-    }
     add(obj, x, y, z){
-        if(!this.checkBoundaries()) return
         let hash = this.encode(x, y, z)
 
         if(this.table.has(hash)){
-            let arr = []
-            arr.push(obj)
-            table.add(hash, arr)
-        }
-        else{
             let arr = this.table.get(hash)
             arr.push(obj)
         }
+        else{  
+            let arr = []
+            arr.push(obj)
+            this.table.set(hash, arr)          
+        }              
     } 
+
     get(x, y, z){
-        if(!this.checkBoundaries()) return
         let hash = this.encode(x, y, z)
-        return table.get(hash)
+        return this.table.get(hash)
     }
+
     getEntriesAndNeighbours(x, y, z){
         let result = []
-        for(let rx in RANGE){
-            for(let ry in RANGE){
-                for(let rz in RANGE){
-                    let arr = this.get(x+rx, y+ry, z+rz)
-                    result.add(...arr) 
-                }
-            }
+        for(let rx of this.iterRange)
+        for(let ry of this.iterRange)
+        for(let rz of this.iterRange){
+            let arr = this.get(x+rx, y+ry, z+rz)
+            if(arr){   
+                result.push(...arr)                    
+            }  
         }
         return result
     }
-    checkBoundaries(x, y, z){
-        if(
-            x<W || x>W ||
-            y<H || y>H ||
-            z<W || z>D
-        ) {
-            console.log("Incorect position");
-            return false
-        }
-        else
-            return true
-    }
+
     clear(){
         this.table.clear()
     }

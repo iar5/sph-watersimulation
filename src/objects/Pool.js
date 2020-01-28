@@ -4,7 +4,7 @@ import * as Mat4 from "../../lib/twgl/m4.js";
 const BOUNCE = 0.2
 const COLLISION_OFFSET = 0.0001;
 
-export class Pool {
+export default class Pool {
     
     /**
      * 

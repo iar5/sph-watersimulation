@@ -1,6 +1,6 @@
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
-import { Drop } from "./Drop.js";
+import Drop from "./Drop.js";
 import { isKeyHold } from "../../lib/keyhold.js"
 
 const BOUNCE = 0.2
@@ -8,7 +8,7 @@ const COLLISION_OFFSET = 0.001
 const ANIM_SPEED = 0.01
 const ANIM_RANGE = 0.5
 
-export class Sphere {
+export default class Sphere {
 
     constructor(pos, radius){
         this.pos = pos
