@@ -11,6 +11,13 @@
  * Probleme, Hinweise
  * - Max integer oder sowas wird nicht beachtet
  * - Wird negativ beachtet?
+ * 
+ * Verbesserungen
+ * - Arrays wiederverwenden 
+ * -- erstellten arrays in liste halten
+ * -- add nimmt array von position i und leert es und verwendet es wieder
+ * -- clear() setzt i auf 0 
+ * -- wenn i > liste.length füge neues array der liste hinzu
  */
 
 
@@ -37,8 +44,7 @@ export default class HashGrid{
 
     decode(){
         // https://www.gamedev.net/forums/topic.asp?topic_id=567378
-        console.log("HashGrid.decode() not implemented yet");
-        
+        console.log("HashGrid.decode() not implemented yet");        
     }
 
     add(obj, x, y, z){

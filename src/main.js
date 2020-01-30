@@ -1,16 +1,23 @@
 /**
  * @author Tom Wendland
  * 
- * Idee:
- * - 
+ * Hinweise:
+ * - Transparency klappt nur wenn Reihenfolge des Zeichnens der Objekte korrekt ist
+ * 
+ * Aufgaben:
+ * - Canvas und WebGL Setup
+ * - Controls
+ * - Rendering
  */
 
 import * as twgl from '../lib/twgl/twgl.js';
 import * as v3 from '../lib/twgl/v3.js';
 import * as m4 from '../lib/twgl/m4.js';
 import * as twglprimitives from '../lib/twgl/primitives.js'
+import { degToRad, loadTextResource } from '../lib/utils.js'
 import { simulation } from './simulation.js'
 import Stats from '../lib/stats.js'
+
 
 
 
@@ -45,6 +52,7 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 //////////////////
 var pointProgram 
 var diffusProgram 
+
 const SHADER_DIR = '/shader/'
 loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
     loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
@@ -93,7 +101,6 @@ twgl.setAttributePrefix("")
 
 
 /**
- * transparency is only working when order of drawing objects is correct
  * @param {Number} time timestamp von requestAnimationFrame
  */
 function render(time) {
@@ -170,7 +177,7 @@ window.addEventListener("resize", e => {
  * Key listener to pause simulation
  */
 document.addEventListener("keydown", e => {
-    if(e.keyCode == 32){
+    if(e.keyCode == 32){ // leeertaste
         pause = !pause
     }
 })
@@ -204,22 +211,4 @@ document.onmousemove = function(e) {
     m4.multiply(newRotationMatrix, camera, camera);
 }
 
-
-/**
- * Loads (local) textfile
- * @param {String} url 
- * @param {Callback} callback 
- */
-function loadTextResource(url, callback) {
-	const request = new XMLHttpRequest()
-	request.open('GET', url + '?please-dont-cache=' + Math.random(), true)
-	request.onload = function () {
-		callback(request.responseText)
-	}
-	request.send()
-}
-
-function degToRad(degrees) {
-    return degrees * Math.PI / 180;
-}
 

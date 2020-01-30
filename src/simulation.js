@@ -20,13 +20,10 @@ const VISC = 0.5 // Ns/m^2
 
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
-const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_RADIUS*2)
 
-// optimization: precalculate constant values 
+// optimization: precalculate constant values and vec3s to reuse them in code
 const H = PARTICLE_RADIUS*2 // kernel radius
 const H2 = H*H
-
-// optimization: predeclare vec3s and reuse them in code
 const rij = Vec3.create() // difference between drop i and j
 const rvij = Vec3.create() // difference in velocity between drop i and j
 const fpress = Vec3.create() // pressure force
@@ -41,10 +38,11 @@ const x = Vec3.create() // position
  * OBJECTS
  * 
  */
+const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_RADIUS*2)
 const pool = new Pool(Vec3.create(), 2, 3, 1)
 const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
 const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 1, 0.5, 0, Vec3.create(300, 0, 0))
-const hashGrid = new HashGrid(H)
+const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
 
 
 
@@ -68,21 +66,28 @@ function update(){
 
     // density (rho) at particle positions
     // pressure (p) at particle positions via gas equation
-    for(let pi of drops){
-        pi.rho = 0
-        for(let pj of drops){
-            let r2 = Vec3.distanceSq(pi.pos, pj.pos)
-            if(r2 < H2){
-                // rho += PARTICLE_MASS * W
-                pi.rho += PARTICLE_MASS * poly6(r2)
-            }
-        }
-        pi.p = GAS_CONST * (pi.rho - REST_DENS)
-    }
-
-    // Navier Stokes pressure and visc force contributions for each cell
     hashGrid.map.forEach((cell, key) => {
         let cellpos = cell[0].pos // zu faul zum position encoden, stattdessen einfach pos von einem element aus der zelle nehmen
+        let collisions = hashGrid.getEntriesAndNeighbours(cellpos[0], cellpos[1], cellpos[2]) 
+
+        for(let pi of cell){
+            pi.rho = 0
+            for(let pj of collisions){
+                let r2 = Vec3.distanceSq(pi.pos, pj.pos)
+                if(r2 < H2){
+                    // rho += PARTICLE_MASS * W
+                    pi.rho += poly6(r2)
+                }
+            }
+            pi.rho *= PARTICLE_MASS // optimization, outsource multiplication
+            pi.p = GAS_CONST * (pi.rho - REST_DENS)    
+        }
+    })
+
+    // Navier Stokes 
+    // pressure and visc force contributions for each cell
+    hashGrid.map.forEach((cell, key) => {
+        let cellpos = cell[0].pos 
         let collisions = hashGrid.getEntriesAndNeighbours(cellpos[0], cellpos[1], cellpos[2]) 
 
         for(let pi of cell){
@@ -100,15 +105,17 @@ function update(){
                 if(r < H){
                     //fpress += - MASS * rij.normalized() * (pi.p+pj.p)/(2.f*pj.rho) * W;
                     Vec3.normalize(rij, rij)
-                    Vec3.mulScalar(rij, - PARTICLE_MASS * (pi.p + pj.p)/(2*pj.rho) * spiky(r), rij)
+                    Vec3.mulScalar(rij, (pi.p + pj.p)/(2*pj.rho) * spiky(r), rij)
                     Vec3.add(fpress, rij, fpress)
     
                     //fvisc += VISC * MASS * (pj.v-pi.v) / pj.rho * W;
                     Vec3.subtract(pj.v, pi.v, rvij)
-                    Vec3.mulScalar(rvij, VISC * PARTICLE_MASS * 1/pj.rho * visc(r), rvij)
+                    Vec3.mulScalar(rvij, 1/pj.rho * visc(r), rvij)
                     Vec3.add(fvisc, rvij, fvisc)
                 }
             }
+            Vec3.mulScalar(fpress, -PARTICLE_MASS, fpress)
+            Vec3.mulScalar(fvisc, VISC * PARTICLE_MASS, fvisc)
 
             Vec3.mulScalar(EXTERNAL_FORCES, pi.rho, fgrav)
             Vec3.add(f, fgrav, f)
@@ -131,6 +138,9 @@ function update(){
 }
 
 
+/**
+ * SMOOTHING KERNELS
+ */
 const POLY6 = 315/(65*Math.PI*Math.pow(H,9))
 const SPIKY_GRAD = -45/(Math.PI*Math.pow(H,6))
 const VISC_LAP = 45/(Math.PI*Math.pow(H,6))
