@@ -9,18 +9,18 @@ export default class Emitter{
      * 
      * @param {Vec3} spawn position
      * @param {Array} drops data destination
-     * @param {Number} amount particles per second
+     * @param {Number} amount particles per millisecond
+     * @param {Vec3} velocity initial velocity 
      * @param {Number} offset spawn offset from position
      * @param {Number} spread additional initial velocity in a randome direction
-     * @param {Vec3} velocity initial velocity 
      */
-    constructor(spawn, drops, amount=1, offset=0.3, spread=0.01, velocity=Vec3.create()){
+    constructor(spawn, drops, amount=1, velocity=Vec3.create(), offset=0.3, spread=0.01){
         this.spawn = spawn
         this.drops = drops
         this.amount = amount
+        this.velocity = velocity
         this.offset = offset
         this.spread = spread
-        this.velocity = velocity
     }
 
     update(){

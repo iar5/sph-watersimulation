@@ -2,6 +2,7 @@
  * @author Tom Wendland
  * SPH simulation solver
  * Ziel: Berechnen von auf Partikel wirkende Kraft (Collision und numerikale Integration gehören eigentlich nicht dazu)
+ * Einheiten werden  in sca05.pdf gut gegeben
  * */
 
 import * as Vec3 from '../lib/twgl/v3.js'
@@ -13,22 +14,23 @@ import HashGrid from './objects/HashGrid.js'
 
 
 const TIMESTEP = 0.00002 // dt
-const EXTERNAL_FORCES = [0, -9.81*10000, 0] // m/s
+const EXTERNAL_FORCES = [0, -9.81*20000, 0] // m/s
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
-const VISC = 0.5 // Ns/m^2
+const VISC = 1 // Ns/m^2
 
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
 
-// optimization: precalculate constant values and vec3s to reuse them in code
+// optimization: precalculate constant values and initialise vec3s to reuse them in code
 const H = PARTICLE_RADIUS*2 // kernel radius
 const H2 = H*H
 const rij = Vec3.create() // difference between drop i and j
 const rvij = Vec3.create() // difference in velocity between drop i and j
 const fpress = Vec3.create() // pressure force
 const fvisc = Vec3.create() // viscosity force
-const fgrav = Vec3.create() // grav force
+const fgrav = Vec3.create() // external gravity force
+const ftens = Vec3.create() // surface tension force
 const f = Vec3.create() // force sum
 const v = Vec3.create() // velocity
 const x = Vec3.create() // position
@@ -38,10 +40,10 @@ const x = Vec3.create() // position
  * OBJECTS
  * 
  */
-const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 10, 14, 10, PARTICLE_RADIUS*2)
+const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 12, 14, 12, PARTICLE_RADIUS*2)
+const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 0, 0))
 const pool = new Pool(Vec3.create(), 2, 3, 1)
 const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
-const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 1, 0.5, 0, Vec3.create(300, 0, 0))
 const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
 
 
@@ -53,11 +55,7 @@ const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
 function update(){ 
 
     sphere.update()
-    
-    for(let p of drops){
-        pool.collide(p)
-        sphere.collide(p)
-    }
+    //emitter.update()
 
     hashGrid.clear()
     for(let p of drops){
@@ -85,7 +83,7 @@ function update(){
     })
 
     // Navier Stokes 
-    // pressure and visc force contributions for each cell
+    // calculate forces for earch particle 
     hashGrid.map.forEach((cell, key) => {
         let cellpos = cell[0].pos 
         let collisions = hashGrid.getEntriesAndNeighbours(cellpos[0], cellpos[1], cellpos[2]) 
@@ -95,6 +93,7 @@ function update(){
             Vec3.reset(fgrav)
             Vec3.reset(fpress)
             Vec3.reset(fvisc)
+            Vec3.reset(ftens)
         
             for(let pj of collisions){
                 if(pi === pj) continue
@@ -112,6 +111,9 @@ function update(){
                     Vec3.subtract(pj.v, pi.v, rvij)
                     Vec3.mulScalar(rvij, 1/pj.rho * visc(r), rvij)
                     Vec3.add(fvisc, rvij, fvisc)
+
+                    //colorfield += MASS * 1/pj.rho W
+
                 }
             }
             Vec3.mulScalar(fpress, -PARTICLE_MASS, fpress)
@@ -121,9 +123,15 @@ function update(){
             Vec3.add(f, fgrav, f)
             Vec3.add(f, fpress, f)
             Vec3.add(f, fvisc, f)
+            Vec3.add(f, ftens, f)
             Vec3.copy(f, pi.f)
         }
     })
+
+    for(let p of drops){
+        pool.collide(p)
+        sphere.collide(p)
+    }
 
     // numerical integration forward euler
     for(let p of drops){
