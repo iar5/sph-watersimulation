@@ -15,25 +15,24 @@ const out = Vec3.create() // reflection vector, out dir
 
 export default class Sphere {
 
+    color = [1, 0, 0, 1]
+    _animcount = 0
+
     constructor(pos, radius){
         this.pos = pos
         this.r = radius
-        this.color = [1, 0, 0, 1]
-        this._animcount = 0
     }
-
     update(){
         this._animcount += ANIM_SPEED
         this.pos[0] = Math.sin(this._animcount) * ANIM_RANGE
 
-        /*const A = 0.01
+        return
+        const A = 0.01
         if(isKeyHold(65)) this.pos[0] -= A
         if(isKeyHold(68)) this.pos[0] += A
         if(isKeyHold(87)) this.pos[1] += A
-        if(isKeyHold(83)) this.pos[1] -= A*/
+        if(isKeyHold(83)) this.pos[1] -= A
     }
-
-
     /**
      * Korrekte Kollisionsbehandlung für wenn Parttikel sich in Sphere beewgt hat
      * Geschwindigkeitsvektor wird gespiegelt an Oberfläche 

@@ -4,6 +4,7 @@
  * Ziel: Berechnen von auf Partikel wirkende Kraft 
  * (Collision und numerikale Integration gehören eigentlich nicht dazu)
  * Einheiten werden  in sca05.pdf gut gegeben
+ * Parameter Hilfe https://scicomp.stackexchange.com/questions/14450/how-to-get-proper-parameters-of-sph-simulation
  * */
 
 import * as Vec3 from '../lib/twgl/v3.js'
@@ -21,7 +22,6 @@ const EXTERNAL_FORCES = [0, -9.81*20000, 0] // m/s
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
 const VISC = 0.5 // Ns/m^2
-
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
 
@@ -48,7 +48,7 @@ const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
 const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 0, 0))
 
 const pool = new Pool(Vec3.create(), 2, 3, 1)
-const plane = new Plane(Vec3.create(), 1, 1, 1)
+const plane = new Plane(Vec3.create(-0.4, -0.7, 0), 1.2, 1)
 const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
 
 
@@ -132,6 +132,7 @@ function update(){
         }
     })
 
+    // collisions
     for(let p of drops){
         plane.collide(p)
         sphere.collide(p)
@@ -140,6 +141,8 @@ function update(){
 
     // numerical integration forward euler
     for(let p of drops){
+        Vec3.copy(p.pos, p.oldpos)
+
         // p.v += DT*p.f/p.rho;
         Vec3.mulScalar(p.f, TIMESTEP/p.rho, v) 
         Vec3.add(p.v, v, p.v)

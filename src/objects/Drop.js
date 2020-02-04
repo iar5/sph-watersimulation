@@ -15,6 +15,7 @@ export default class Drop {
     constructor(p=Vec3.create(), v=Vec3.create()){
         this.pos = p
         this.v = v
+        this.oldpos = Vec3.copy(this.v) // for collision checks
     }
 }
 
