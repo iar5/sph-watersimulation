@@ -34,19 +34,16 @@ export default class HashGrid{
         this.gridSize = cell_size 
         this.iterRange = [-cell_size, 0, cell_size]
     }
-
     encode(x, y, z){
         let ex = Math.floor(x/this.gridSize)
         let ey = Math.floor(y/this.gridSize)
         let ez = Math.floor(z/this.gridSize)
         return (ex*73856093 + ey*19349663 + ez*83492791)
     }
-
     decode(){
         // https://www.gamedev.net/forums/topic.asp?topic_id=567378
         console.log("HashGrid.decode() not implemented yet");        
     }
-
     add(obj, x, y, z){
         let hash = this.encode(x, y, z)
 
@@ -60,12 +57,10 @@ export default class HashGrid{
             this.map.set(hash, arr)          
         }              
     } 
-
     get(x, y, z){
         let hash = this.encode(x, y, z)
         return this.map.get(hash)
     }
-
     getEntriesAndNeighbours(x, y, z){
         let result = []
         for(let rx of this.iterRange)
@@ -78,7 +73,6 @@ export default class HashGrid{
         }
         return result
     }
-
     clear(){
         this.map.clear()
     }

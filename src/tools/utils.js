@@ -1,3 +1,8 @@
+/**
+ * 
+ * @param {Number} degrees 
+ * @returns {Number} radians
+ */
 export function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
@@ -17,7 +22,7 @@ export function loadTextResource(url, callback) {
 }
 
 /**
- * TODO never tested
+ * TODO not tested
  * @param {Array<String>} urlsArr 
  * @param {Callback} callback 
  * @returns

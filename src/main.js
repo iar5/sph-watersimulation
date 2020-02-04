@@ -11,12 +11,12 @@
  */
 
 import * as twgl from '../lib/twgl/twgl.js';
+import * as twglprimitives from '../lib/twgl/primitives.js'
 import * as v3 from '../lib/twgl/v3.js';
 import * as m4 from '../lib/twgl/m4.js';
-import * as twglprimitives from '../lib/twgl/primitives.js'
-import { degToRad, loadTextResource } from '../lib/utils.js'
-import { simulation } from './simulation.js'
 import Stats from '../lib/stats.js'
+import { degToRad, loadTextResource } from './tools//utils.js'
+import { simulation } from './simulation.js'
 
 
 
@@ -53,7 +53,7 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 var pointProgram 
 var diffusProgram 
 
-const SHADER_DIR = '/shader/'
+const SHADER_DIR = '/src/shader/'
 loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
     loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
         loadTextResource(SHADER_DIR+'diffus.vs', (dvs) => {
@@ -121,6 +121,7 @@ function render(time) {
     } 
     
     
+
     const drops = simulation.getDrops()
     const dropsPos = []
     for(let drop of drops){

@@ -1,23 +1,26 @@
 /**
  * @author Tom Wendland
  * SPH simulation solver
- * Ziel: Berechnen von auf Partikel wirkende Kraft (Collision und numerikale Integration gehören eigentlich nicht dazu)
+ * Ziel: Berechnen von auf Partikel wirkende Kraft 
+ * (Collision und numerikale Integration gehören eigentlich nicht dazu)
  * Einheiten werden  in sca05.pdf gut gegeben
  * */
 
 import * as Vec3 from '../lib/twgl/v3.js'
 import Drop from './objects/Drop.js'
 import Sphere from './objects/Sphere.js'
+import Plane from './objects/Plane.js'
 import Pool from './objects/Pool.js'
 import Emitter from './objects/Emitter.js'
-import HashGrid from './objects/HashGrid.js'
+import HashGrid from './tools/HashGrid.js'
 
 
 const TIMESTEP = 0.00002 // dt
 const EXTERNAL_FORCES = [0, -9.81*20000, 0] // m/s
+
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
-const VISC = 1 // Ns/m^2
+const VISC = 0.5 // Ns/m^2
 
 const PARTICLE_MASS = 0.0002 // kg
 const PARTICLE_RADIUS = 0.03 // m
@@ -41,10 +44,12 @@ const x = Vec3.create() // position
  * 
  */
 const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 12, 14, 12, PARTICLE_RADIUS*2)
-const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 0, 0))
-const pool = new Pool(Vec3.create(), 2, 3, 1)
-const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
 const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
+const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 0, 0))
+
+const pool = new Pool(Vec3.create(), 2, 3, 1)
+const plane = new Plane(Vec3.create(), 1, 1, 1)
+const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
 
 
 
@@ -113,7 +118,6 @@ function update(){
                     Vec3.add(fvisc, rvij, fvisc)
 
                     //colorfield += MASS * 1/pj.rho W
-
                 }
             }
             Vec3.mulScalar(fpress, -PARTICLE_MASS, fpress)
@@ -129,8 +133,9 @@ function update(){
     })
 
     for(let p of drops){
-        pool.collide(p)
+        plane.collide(p)
         sphere.collide(p)
+        pool.collide(p)
     }
 
     // numerical integration forward euler
@@ -177,6 +182,9 @@ export const simulation = (function(){
         getSphere(){
             return sphere 
         },
+        getPlane(){
+            return plane
+        }
     }
 })()
 

@@ -1,11 +1,14 @@
-import * as Vec3 from "../../lib/twgl/v3.js";
-
 /**
+ * @author Tom Wendland
+ * 
  * Idee: für temporäre Berechnung erstellte Vec3`s nach Benutzung freigeben und nicht benutzte Vec3`s verwenden, anstatt neue zu erstellen
  * Todo: Einbindung in Vec3 Klasse
  * - in Vec3 Klasse alle new Vec3Type() mit Vec3Factory.create() ersetzen
  * - muss dann aber auch dran denken alle Vec3 freizugeben, z.B. mit neuer Methode Vec3.free()
  */
+
+import * as Vec3 from "./twgl/v3.js";
+
 export default (function(){
 
     const vecs = []
@@ -27,4 +30,3 @@ export default (function(){
         }
     }
 })()
-
