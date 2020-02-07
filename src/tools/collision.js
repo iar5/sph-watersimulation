@@ -5,22 +5,68 @@
 import * as Vec3 from "./../../lib/twgl/v3.js";
 import * as Mat4 from "./../../lib/twgl/m4.js";
 
+// for performance 
+const temp = Vec3.create() 
+const temp2 = Vec3.create() 
 
 export const EPSILON = 0.0001
 
-const temp = Vec3.create() // for hit calc
+/**
+ * 
+ * @param {Vec3} p point
+ * @param {Vec3} m mid of sphere
+ * @param {Vec3} r radius
+ * @returns {Boolean}
+ */
+export function testPointSphere(p, m, r){
+    let dist = Vec3.distance(p, m)
+    return (dist <= r)
+}
+
+/**
+ * test in 2D (XZ) if point is in rectangle represented by midpoint, width and depth
+ * @param {Vec3} p 
+ * @param {Vec3} m 
+ * @param {Number} width 
+ * @param {Number} depth 
+ * @returns {Boolean}
+ */
+export function testPointRectangle(p, m, width, depth){
+    Vec3.subtract(p, m, temp) // center 
+    let w2 = width/2
+    let d2 = depth/2
+    return temp[0]<=w2 && temp[0]>=-w2 && temp[2]<=d2 && temp[2]>=-d2
+}
+
+/**
+ * test in 2D (XZ) if segment intersects with XZ plane
+ * @param {Vec3} a 
+ * @param {Vec3} b 
+ * @param {Number} d 
+ * @returns {Boolean}
+ */
+export function testSegmentPlane(a, b, d){
+    return a[1] > d && b[1] < d
+}
+
+/**
+ * 
+ */
+export function testSegmentSphere(o, v, m, r){
+    return true
+}
 
 /**
  * From Christer Ercison's book
  * Intersects ray r = p + td, |d| = 1 with sphere
  * Weil kleinste (auch negative) t genommen wird ist garantiert dass es Eintrittspunkt ist
  * @param {Vec3} p Origin
- * @param {Vec3} d normalized Direction
+ * @param {Vec3} dn normalized Direction
  * @param {Vec3} s Sphere position
  * @param {Number} r Sphere radius
  * @param {Vec} intersection point
- * @param {Vec3?} dst vector
- * @returns {Vec3?} dst
+ * @param {Vec3?} dst vector which holds the result
+ * @returns {Vec3 | null} dst
  */
 export function intersectRaySphere(p, dn, s, r, dst=Vec3.create()){
     let m = temp
@@ -46,9 +92,9 @@ export function intersectRaySphere(p, dn, s, r, dst=Vec3.create()){
  * @param {Vec3} a point a
  * @param {Vec3} b point b
  * @param {Vec3} n plane normal
- * @param {Vec3} d position der ebene in Normalenrichtung, siege Hessische Normalform
+ * @param {Number} d position der ebene in Normalenrichtung, siege Hessische Normalform
  * @param {Vec3?} out 
- * @returns {Vec3?} out
+ * @returns {Vec3 | null} vector which holds the result
  */
 export function intersectSegmentPlane(a, b, n, d, out=Vec3.create()){
     // Compute the t value for the directed line ab intersecting the plane
@@ -76,17 +122,10 @@ export function intersectSegmentPlane(a, b, n, d, out=Vec3.create()){
  * @param {Vec3} vec incoming vector  
  * @param {Vec3} n normalized(!) plane normal
  * @param {Vec3?} out must not be the same vector like vec(!)
- * @returns {Vec} out outcoming vector with same length as incoming vector 
+ * @returns {Vec} out outcoming vector with (same length as incoming vector) 
  */
 export function reflectVecOnPlane(vec, n, out=Vec3.create()){
     Vec3.mulScalar(n, 2*Vec3.dot(vec, n), out)
     Vec3.subtract(vec, out, out)
     return out
-}
-
-/**
- * 
- */
-export function testPointInBox(){
-    return true
 }

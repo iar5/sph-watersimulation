@@ -2,7 +2,7 @@ import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
 import Drop from "./Drop.js";
 import { isKeyHold } from "../tools/keyhold.js"
-import { intersectRaySphere, reflectVecOnPlane, EPSILON } from "../tools/collision.js"
+import { EPSILON, intersectRaySphere, reflectVecOnPlane, testPointSphere } from "../tools/collision.js"
 
 const ANIM_SPEED = 0.01
 const ANIM_RANGE = 0.5
@@ -43,8 +43,8 @@ export default class Sphere {
      * @param {Drop} drop 
      */
     collide(drop){
-        let dist = Vec3.distance(drop.pos, this.pos)
-        if(dist > this.r) return
+        if(!testPointSphere(drop.pos, this.pos, this.r))
+            return
 
         Vec3.reset(vn)
         Vec3.reset(hit)
