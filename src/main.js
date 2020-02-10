@@ -30,9 +30,6 @@ const stats = new Stats();
 document.body.appendChild(stats.dom);
 
 var pause = false
-var framecount = 0
-var infoEl = document.getElementById("myinfo")
-
 
 
 //////////////////
@@ -96,16 +93,16 @@ const globalUniforms = {
 
 
 
+
 /**
  * @param {Number} time timestamp von requestAnimationFrame
  */
 function render(time) {
     requestAnimationFrame(render)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    framecount++
-    infoEl.innerHTML = framecount
     stats.begin();
+
+    m4.inverse(camera, globalUniforms.u_view)
     
     if(!pause) 
         simulation.update() 
