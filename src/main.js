@@ -15,8 +15,10 @@ import * as twglprimitives from '../lib/twgl/primitives.js'
 import * as v3 from '../lib/twgl/v3.js';
 import * as m4 from '../lib/twgl/m4.js';
 import Stats from '../lib/stats.js'
-import { degToRad, loadTextResource } from './tools//utils.js'
+import { degToRad } from './tools//utils.js'
 import { simulation } from './simulation.js'
+import { point_vs, point_fs } from './shader/point.js';
+import { diffus_vs, diffus_fs } from './shader/diffus.js';
 
 
 
@@ -50,23 +52,9 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 //////////////////
 //  LOAD SHADER //
 //////////////////
-var pointProgram 
-var diffusProgram 
-
-console.log("test");
-
-const SHADER_DIR = '/src/shader/'
-loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
-    loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
-        loadTextResource(SHADER_DIR+'diffus.vs', (dvs) => {
-            loadTextResource(SHADER_DIR+'diffus.fs', (dfs) => {
-                pointProgram = twgl.createProgramInfo(gl, [pvs, pfs]);
-                diffusProgram = twgl.createProgramInfo(gl, [dvs, dfs]);
-                requestAnimationFrame(render);
-            })
-        })
-    })
-})
+const pointProgram = twgl.createProgramInfo(gl, [point_vs, point_fs]);
+const diffusProgram = twgl.createProgramInfo(gl, [diffus_vs, diffus_fs]);
+requestAnimationFrame(render);
 
 
 
