@@ -53,7 +53,7 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 var pointProgram 
 var diffusProgram 
 
-const SHADER_DIR = '/src/shader/s'
+const SHADER_DIR = '/src/shader/'
 loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
     loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
         loadTextResource(SHADER_DIR+'diffus.vs', (dvs) => {
