@@ -86,7 +86,7 @@ const camera = m4.translation([0, 0, 6]) // guckt nach -z. iverse wäre welt koo
 const lightuniform = {
     ambient: [0.3, 0.3, 0.3],
     sunColor: [0.8, 0.8, 0.8],
-    sunPosition: [2.0, 3.0, 2.0],
+    sunPosition: [-2.0, 3.0, 2.0],
 }
 
 
@@ -98,6 +98,7 @@ twgl.setAttributePrefix("a_")
 const sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
 const planeBufferInfo = twglprimitives.createPlaneBufferInfo(gl, 1, 1, 2, 2)
 twgl.setAttributePrefix("")
+let waterModelMat = m4.identity()
 
 
 
@@ -122,48 +123,47 @@ function render(time) {
     } 
     
 
+    const m = 7141.5679592517162746
+    const mass = 0.0001
+    const highdens = 3
+    const lowdens = 1
+
+    var min = Number.MAX_VALUE
+    var max = Number.NEGATIVE_INFINITY
 
     const drops = simulation.getDrops()
     const dropsPos = []
     const dropsColor = []
     drops.forEach(drop => {
         dropsPos.push(drop.pos[0], drop.pos[1], drop.pos[2])
-        dropsColor.push(0.1, 0.1, 1-(drop.rho-1.47)*5, 1)
+        dropsColor.push(0.1, 0.1, 1, 1)
     })  
+
 
     gl.useProgram(pointProgram.program);
     const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         a_position: { numComponents: 3, data: dropsPos },
         a_color: { numComponents: 4, data: dropsColor }
     });  
-    let waterModelMat = m4.identity();
-    m4.translate(waterModelMat, [0, 0, 0], waterModelMat)  
     twgl.setUniforms(pointProgram, globalUniforms);
     twgl.setUniforms(pointProgram, { u_model: waterModelMat });
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 
-
     let sphere = simulation.getSphere()
-    let sphereModelMat = m4.identity();
-    m4.translate(sphereModelMat, sphere.pos, sphereModelMat)   
-    m4.scale(sphereModelMat, v3.create(sphere.r, sphere.r, sphere.r), sphereModelMat)
     gl.useProgram(diffusProgram.program);
     twgl.setUniforms(diffusProgram, globalUniforms);
     twgl.setUniforms(diffusProgram, lightuniform);
-    twgl.setUniforms(diffusProgram, { u_model: sphereModelMat, u_color: sphere.color });
+    twgl.setUniforms(diffusProgram, { u_model: sphere.modelMat, u_color: sphere.color });
     twgl.setBuffersAndAttributes(gl, diffusProgram, sphereBufferInfo);
     twgl.drawBufferInfo(gl, sphereBufferInfo, gl.TRIANGLES);
 
     // TODO backfaces werden nicht gemalt
     let plane = simulation.getPlane()
-    let planeModelMat = m4.identity();
-    m4.translate(planeModelMat, plane.pos, planeModelMat)   
-    m4.scale(planeModelMat, v3.create(plane.width, 1, plane.length), planeModelMat)
     gl.useProgram(diffusProgram.program);
     twgl.setUniforms(diffusProgram, globalUniforms);
     twgl.setUniforms(diffusProgram, lightuniform);
-    twgl.setUniforms(diffusProgram, { u_model: planeModelMat, u_color: plane.color });
+    twgl.setUniforms(diffusProgram, { u_model: plane.modelMat, u_color: plane.color });
     twgl.setBuffersAndAttributes(gl, diffusProgram, planeBufferInfo);
     twgl.drawBufferInfo(gl, planeBufferInfo, gl.TRIANGLES);
 

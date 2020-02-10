@@ -3,6 +3,8 @@ import * as Mat4 from "../../lib/twgl/m4.js";
 import Drop from "./Drop.js";
 import { isKeyHold } from "../tools/keyhold.js"
 import { EPSILON, intersectRaySphere, reflectVecOnPlane, testPointSphere } from "../tools/collision.js"
+import Object3D from "./Object3D.js";
+
 
 const ANIM_SPEED = 0.01
 const ANIM_RANGE = 0.5
@@ -11,28 +13,29 @@ const vn = Vec3.create() // dir normalized
 const hit = Vec3.create() // hit
 const n = Vec3.create() // normal
 const out = Vec3.create() // reflection vector, out dir
+const tempPos = Vec3.create()
 
 
-export default class Sphere {
+export default class Sphere extends Object3D{
 
-    color = [1, 0, 0, 1]
+    color = [.1, .8, .5, 1]
     _animcount = 0
+    _pos = Vec3.create() // nur damit bei update nicht jedes mal neue objekt erstellt werden muss
 
     constructor(pos, radius){
-        this.pos = pos
+        super()
         this.r = radius
+        this._pos = Vec3.copy(pos, this._pos)
+        this.translate(pos)
+        this.scale([this.r, this.r, this.r])
     }
+
     update(){
         this._animcount += ANIM_SPEED
-        this.pos[0] = Math.sin(this._animcount) * ANIM_RANGE
-
-        return
-        const A = 0.01
-        if(isKeyHold(65)) this.pos[0] -= A
-        if(isKeyHold(68)) this.pos[0] += A
-        if(isKeyHold(87)) this.pos[1] += A
-        if(isKeyHold(83)) this.pos[1] -= A
+        this._pos[0] = Math.sin(this._animcount) * ANIM_RANGE
+        this.setTranslation(this._pos)
     }
+    
     /**
      * Korrekte Kollisionsbehandlung für wenn Parttikel sich in Sphere beewgt hat
      * Geschwindigkeitsvektor wird gespiegelt an Oberfläche 
@@ -43,7 +46,9 @@ export default class Sphere {
      * @param {Drop} drop 
      */
     collide(drop){
-        if(!testPointSphere(drop.pos, this.pos, this.r))
+        let pos = this.getTranslation(tempPos)
+
+        if(!testPointSphere(drop.pos, pos, this.r))
             return
 
         Vec3.reset(vn)
@@ -54,9 +59,9 @@ export default class Sphere {
         let vl = Vec3.length(drop.v)
         Vec3.mulScalar(drop.v, 1/vl, vn)
 
-        intersectRaySphere(drop.pos, vn, this.pos, this.r+EPSILON, hit)  
+        intersectRaySphere(drop.pos, vn, pos, this.r+EPSILON, hit)  
 
-        Vec3.subtract(hit, this.pos, n)
+        Vec3.subtract(hit, pos, n)
         Vec3.normalize(n, n)
         reflectVecOnPlane(drop.v, n, out)
 

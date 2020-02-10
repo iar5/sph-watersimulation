@@ -6,8 +6,7 @@
  * Einheiten werden  in sca05.pdf gut gegeben
  * Parameter Hilfe https://scicomp.stackexchange.com/questions/14450/how-to-get-proper-parameters-of-sph-simulation
  * 
- * */
-
+ */
 import * as Vec3 from '../lib/twgl/v3.js'
 import Drop from './objects/Drop.js'
 import Sphere from './objects/Sphere.js'
@@ -23,7 +22,7 @@ const EXTERNAL_FORCES = [0, -9.81*20000, 0] // m/s
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
 const VISC = 0.2 // Ns/m^2
-const PARTICLE_MASS = 0.0002 // kg
+const PARTICLE_MASS = 0.0001 // kg
 const PARTICLE_RADIUS = 0.03 // m
 
 // optimization: precalculate constant values and initialise vec3s to reuse them in code
@@ -50,7 +49,7 @@ const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 
 
 const pool = new Pool(Vec3.create(), 2, 3, 1)
 const plane = new Rectangle(Vec3.create(-0.4, -0.7, 0), 1.2, 1)
-const sphere = new Sphere(Vec3.create(0, 0, 0), 0.4)
+const sphere = new Sphere(Vec3.create(0, 0, 0), 0.35)
 
 
 
@@ -76,6 +75,7 @@ function update(){
 
         for(let pi of cell){
             pi.rho = 0
+            pi.p = 0
             for(let pj of collisions){
                 let r2 = Vec3.distanceSq(pi.pos, pj.pos)
                 if(r2 < H2){

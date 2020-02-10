@@ -1,52 +1,56 @@
-/**
- * @author Tom Wendland
- * 
- * TODO
- * standard plane is 1x1 und liegt an 0,0,0
- * verschiebung und skalierung etc über tansformationsmatrix
- * um n zu bekommen einfach die eckpunkte transformaieren mit matrix 
- * pos etc für berechnungen aus matrix generiegbar
- * 
- * für sphere keine matrix weil die nicht aus ner geometrie besteht sondern explizit definiert wird?!
- * 
- * Ziel durch tansformationsmatrix
- * - zeichnen der Ebene schräg sollte einfach sein
- * - wenn ebene schräg ist kann mit matrix ray auf xz ebene projeziert werden und aabb ray kollision wieder möglich
- */
-
 import * as Vec3 from "../../lib/twgl/v3.js";
 import * as Mat4 from "../../lib/twgl/m4.js";
+import Object3D from "./Object3D.js";
 import Drop from "./Drop.js";
 import { EPSILON, intersectSegmentPlane, reflectVecOnPlane, testPointRectangle, testSegmentPlane } from "../tools/collision.js"
 
-const hit = Vec3.create()
+
+const tempHit = Vec3.create()
+const tempPos = Vec3.create()
 const temp = Vec3.create()
 
-export default class Rectangle {
 
-    color = [0, 1, 0, 1]
+export default class Rectangle extends Object3D {
 
+    color = [.1, .8, .6, 1]
+    n = Vec3.create(0, 1, 0)
+
+    /**
+     * 
+     * @param {Number} width 
+     * @param {Number} length 
+     */
     constructor(pos, width, length){
-        this.pos = pos
+        super()
+        this.translate(pos)
+        this.scale(Vec3.create(width, 1, length))
         this.width = width
         this.length = length
-        this.n = Vec3.create(0, 1, 0)
     }
 
     /**
      * Problem in der Ecke mit Wand wegen ungenauer Kollisionsbehandlung der Wand, deswegen Rectangle bisschen größer faken
-     * testPointRectangle und testSegmentPlane nur korrekt für Rechteck was in XZ Ebene liegt, siehe TODO oben
+     * testPointRectangle korrekt wenn ray projeziert wird 
+     * testSegmentPlane nur korrekt für Rechteck was in XZ Ebene liegt, siehe TODO oben
+     * 
+     * TODO
+     * n ersetzen durch rotation 
+     * um n für berechnungen zu bekommen einfach die eckpunkte transformaieren mit matrix 
+     * wenn ebene schräg ist kann mit matrix ray auf xz ebene projeziert werden und aabb ray kollision wieder möglich
      * @param {Drop} drop 
      */
     collide(drop){   
-        let d = Vec3.dot(this.pos, this.n) // höhe in richtung n, siehe hess noralformel
+        let pos = this.getTranslation(tempPos)
+        let d = Vec3.dot(pos, this.n) // abstand vom ursprung in richtung n, siehe hess noralformel
 
         if(!testSegmentPlane(drop.oldpos, drop.pos, d)) // nur für XZ 
             return
         
-        let hitn = intersectSegmentPlane(drop.oldpos, drop.pos, this.n, d, hit) // return value can be null 
-        
-        if(!hitn || !testPointRectangle(hit, this.pos, this.width+0.02, this.length+0.02)) 
+        let hit = intersectSegmentPlane(drop.oldpos, drop.pos, this.n, d, tempHit) // return value can be null 
+        if(!hit)
+            return
+
+        if(!testPointRectangle(hit, pos, this.width+0.02, this.length+0.02)) 
             return
 
         Vec3.mulScalar(this.n, EPSILON, temp)
