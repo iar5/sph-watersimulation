@@ -53,7 +53,7 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 var pointProgram 
 var diffusProgram 
 
-const SHADER_DIR = '/src/shader/'
+const SHADER_DIR = '/src/shader/s'
 loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
     loadTextResource(SHADER_DIR+'point.fs', (pfs) => {
         loadTextResource(SHADER_DIR+'diffus.vs', (dvs) => {
@@ -65,6 +65,16 @@ loadTextResource(SHADER_DIR+'point.vs', (pvs) => {
         })
     })
 })
+
+
+
+//////////////////
+// PRIMMITIVES  //
+//////////////////
+twgl.setAttributePrefix("a_")
+const sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
+const planeBufferInfo = twglprimitives.createPlaneBufferInfo(gl, 1, 1, 2, 2)
+twgl.setAttributePrefix("") // otherwise additional costum attributes would be like a_a_name
 
 
 
@@ -81,7 +91,7 @@ const camera = m4.translation([0, 0, 6]) // guckt nach -z. iverse wäre welt koo
 
 
 //////////////////
-//     LIGHT    //
+//   UNIFORMS   //
 //////////////////
 const lightuniform = {
     ambient: [0.3, 0.3, 0.3],
@@ -89,16 +99,10 @@ const lightuniform = {
     sunPosition: [-2.0, 3.0, 2.0],
 }
 
-
-
-//////////////////
-// PRIMMITIVES  //
-//////////////////
-twgl.setAttributePrefix("a_")
-const sphereBufferInfo = twglprimitives.createSphereBufferInfo(gl, 1, 12, 12)
-const planeBufferInfo = twglprimitives.createPlaneBufferInfo(gl, 1, 1, 2, 2)
-twgl.setAttributePrefix("")
-let waterModelMat = m4.identity()
+const globalUniforms = {
+    u_projection: projection,
+    u_view: m4.inverse(camera),
+} 
 
 
 
@@ -115,19 +119,11 @@ function render(time) {
     
     if(!pause) 
         simulation.update() 
-    
-    const globalUniforms = {
-        u_projection: projection,
-        u_view: m4.inverse(camera),
-        u_model: m4.identity() // placeholder
-    } 
-    
 
     const m = 7141.5679592517162746
     const mass = 0.0001
     const highdens = 3
     const lowdens = 1
-
     var min = Number.MAX_VALUE
     var max = Number.NEGATIVE_INFINITY
 
@@ -139,14 +135,13 @@ function render(time) {
         dropsColor.push(0.1, 0.1, 1, 1)
     })  
 
-
     gl.useProgram(pointProgram.program);
     const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         a_position: { numComponents: 3, data: dropsPos },
         a_color: { numComponents: 4, data: dropsColor }
     });  
     twgl.setUniforms(pointProgram, globalUniforms);
-    twgl.setUniforms(pointProgram, { u_model: waterModelMat });
+    twgl.setUniforms(pointProgram, { u_model: m4.IDENTITY });
     twgl.setBuffersAndAttributes(gl, pointProgram, waterBufferInfo);
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.POINTS);
 
@@ -166,7 +161,6 @@ function render(time) {
     twgl.setUniforms(diffusProgram, { u_model: plane.modelMat, u_color: plane.color });
     twgl.setBuffersAndAttributes(gl, diffusProgram, planeBufferInfo);
     twgl.drawBufferInfo(gl, planeBufferInfo, gl.TRIANGLES);
-
 
     stats.end();
 }

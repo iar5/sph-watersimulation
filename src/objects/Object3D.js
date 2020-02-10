@@ -3,24 +3,27 @@ import * as Mat4 from "../../lib/twgl/m4.js";
 
 /**
  * Base class for 3D objects which holds the transformation matrix
- * Extend with additional Mat4 methods if needed
+ * (Extend with additional Mat4 methods if needed)
  */
 export default class Object3D {
 
     modelMat = Mat4.identity()
 
-    scale(vec){
-        Mat4.scale(this.modelMat, vec, this.modelMat)
-    }
-
     translate(vec){
         Mat4.translate(this.modelMat, vec, this.modelMat)
     }
-
+    scale(vec){
+        Mat4.scale(this.modelMat, vec, this.modelMat)
+    }
     rotateX(rad){
         Mat4.rotateX(this.modelMat, rad, this.modelMat)
     }
-
+    rotateY(rad){
+        Mat4.rotateY(this.modelMat, rad, this.modelMat)
+    }
+    rotateZ(rad){
+        Mat4.rotateZ(this.modelMat, rad, this.modelMat)
+    }
     setTranslation(vec){
         Mat4.setTranslation(this.modelMat, vec, this.modelMat)
     }
