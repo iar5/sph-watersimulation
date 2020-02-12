@@ -1,3 +1,10 @@
+<img src="sph.jpg" width="200px">
+
+# Descripion
+
+SPH fluid simulation based on Mathias Müller paper "Particle-Based Fluid Simulation for Interactive Applications". 
+
+
 # Execute 
 Install a local server if needed with
 
