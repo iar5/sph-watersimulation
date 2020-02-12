@@ -14,7 +14,7 @@ import * as twgl from '../lib/twgl/twgl.js';
 import * as twglprimitives from '../lib/twgl/primitives.js'
 import * as v3 from '../lib/twgl/v3.js';
 import * as m4 from '../lib/twgl/m4.js';
-import Stats from '../lib/stats.js'
+import Stats from '../lib/stats.module.js'
 import { degToRad } from './tools//utils.js'
 import { simulation } from './simulation.js'
 import { point_vs, point_fs } from './shader/point.js';
