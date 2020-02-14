@@ -1,12 +1,8 @@
 /**
  * @author Tom Wendland
- * SPH simulation solver
- * Ziel: Berechnen von auf Partikel wirkende Kraft 
- * (Collision und numerikale Integration gehören eigentlich nicht dazu)
- * Einheiten werden  in sca05.pdf gut gegeben
- * Parameter Hilfe https://scicomp.stackexchange.com/questions/14450/how-to-get-proper-parameters-of-sph-simulation
- * 
+ * SPH simulation solver + numerical integration
  */
+
 import * as Vec3 from '../lib/twgl/v3.js'
 import Drop from './objects/Drop.js'
 import Sphere from './objects/Sphere.js'
@@ -19,11 +15,11 @@ import HashGrid from './tools/HashGrid.js'
 const TIMESTEP = 0.00002 // dt
 const EXTERNAL_FORCES = [0, -9.81*20000, 0] // m/s
 
-const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
-const GAS_CONST = 2000 // stiffness, Nm/kg
-const VISC = 0.2 // Ns/m^2
+const VISC = 0.5 // Ns/m^2
 const PARTICLE_MASS = 0.0001 // kg
 const PARTICLE_RADIUS = 0.03 // m
+const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
+const GAS_CONST = 2000 // stiffness, Nm/kg
 
 // optimization: precalculate constant values and initialise vec3s to reuse them in code
 const H = PARTICLE_RADIUS*2 // kernel radius
@@ -43,7 +39,7 @@ const x = Vec3.create() // position
  * OBJECTS
  * 
  */
-const drops = Emitter.createDropCube(Vec3.create(0, 1, 0), 12, 14, 12, PARTICLE_RADIUS*2)
+const drops = Emitter.createDropCubeByAmount(Vec3.create(0, 1, 0), 4000, PARTICLE_RADIUS*2)
 const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
 const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 0, 0))
 

@@ -21,10 +21,10 @@ export default class Pool {
     }
     
     /**
-     * Einfache Kollision von innen nach außen in nem 1x1x1 Würfel
-     * Wenn eine Komponente (x,y,z) eines Partikels Wand durchdringt wird diese auf Oberfläche zurück gesetzt
-     * und die entsprechende Komponente der Velocity geflipt.
-     * Normalfall ist dass das nur einer Komponente passiert in Ecken können das aber auch mal zwei sein
+     * simple collision detecion and response for particles moved from the inside to the outside of the cube
+     * - the colliding component (x, y and/or z) of the particle is projected on the the wall again
+     * - the velocity component of the colliding position component is flipped
+     * TODO imporove bc  not very accurat
      * @param {Drop} drop 
      */
     collide(drop){

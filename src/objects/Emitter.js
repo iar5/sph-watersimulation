@@ -40,17 +40,18 @@ export default class Emitter{
     }
 
     /**
-     * 
-     * @param {Vec3} pos 
+     * creates a cube of drops
+     * 2d possible aswell
+     * @param {Vec3} pos center point of the cube
      * @param {Number} amountX 
      * @param {Number} amountY 
      * @param {Number} amountZ 
-     * @param {Number} distance abstand zwischen zwei drop centren (oder auch durchmesser eines drops)
-     * @returns {Array} drops
+     * @param {Number} distance between two drop center points (= diameter of a drop)
+     * @returns {Array} created drops
      */
     static createDropCube(pos, amountX, amountY, amountZ, distance){
+        let g = new RandomeGenerator(-distance*0.01, distance*0.01)
         let result = []
-        let g = new RandomeGenerator(-distance*0.1, distance*0.1)
         
         for(let x=-amountX/2; x < amountX/2; x++){
             for(let y=-amountY/2; y < amountY/2; y++){
@@ -71,7 +72,41 @@ export default class Emitter{
         }
         return result
     }
+
+    /**
+     * creates a cube of drops
+     * @param {Vec3} pos approx center point of the cube
+     * @param {Number} amountX 
+     * @param {Number} amountY 
+     * @param {Number} amountZ 
+     * @param {Number} distance between two drop center points (= diameter of a drop)
+     * @returns {Array} created drops
+     */
+    static createDropCubeByAmount(pos, amount, distance){
+        let g = new RandomeGenerator(-distance*0.01, distance*0.01)
+        let result = []
+
+        let size = Math.floor(Math.cbrt(amount))
+        var counter = 0
+        
+        for(let y=-size/2; counter < amount; y++){
+            for(let x=-size/2; x < size/2 && counter < amount; x++){
+                for(let z=-size/2; z < size/2 && counter < amount; z++){
+                    let d = Vec3.create(
+                        x*distance + distance/2 + g.r(),
+                        y*distance + distance/2 + g.r(),
+                        z*distance + distance/2 + g.r()
+                    )
+                    counter++
+                    Vec3.add(d, pos, d)
+                    result.push(new Drop(d))
+                }
+            }
+        }                
+        return result
+    }
 }
+
 
 function RandomeGenerator(start, end){
     return { 

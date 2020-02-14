@@ -1,15 +1,3 @@
-/**
- * @author Tom Wendland
- * 
- * Hinweise:
- * - Transparency klappt nur wenn Reihenfolge des Zeichnens der Objekte korrekt ist
- * 
- * Aufgaben:
- * - Canvas und WebGL Setup
- * - Controls
- * - Rendering
- */
-
 import * as twgl from '../lib/twgl/twgl.js';
 import * as twglprimitives from '../lib/twgl/primitives.js'
 import * as v3 from '../lib/twgl/v3.js';
@@ -120,6 +108,8 @@ function render(time) {
     drops.forEach(drop => {
         dropsPos.push(drop.pos[0], drop.pos[1], drop.pos[2])
         dropsColor.push(0.1, 0.1, 1, 1)
+        //let v = v3.normalize(drop.v)
+        //dropsColor.push(v[0], v[1], v[2], 1)
     })  
 
     gl.useProgram(pointProgram.program);
