@@ -15,9 +15,10 @@ import HashGrid from './tools/HashGrid.js'
 const TIMESTEP = 0.00002 // dt
 const EXTERNAL_FORCES = [0, -9.81*20000, 0] // m/s
 
-const VISC = 0.5 // Ns/m^2
-const PARTICLE_MASS = 0.0001 // kg
+const VISC = 0.1 // Ns/m^2
 const PARTICLE_RADIUS = 0.03 // m
+const PARTICLE_MASS = 0.0001 // kg
+
 const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
 const GAS_CONST = 2000 // stiffness, Nm/kg
 
@@ -39,7 +40,7 @@ const x = Vec3.create() // position
  * OBJECTS
  * 
  */
-const drops = Emitter.createDropCubeByAmount(Vec3.create(0, 1, 0), 4000, PARTICLE_RADIUS*2)
+const drops = Emitter.createDropCubeByAmount(Vec3.create(0, 1, 0), 3000, PARTICLE_RADIUS*2)
 const hashGrid = new HashGrid(PARTICLE_RADIUS*2)
 const emitter = new Emitter(Vec3.create(-1, 1.5, 0), drops, 2, Vec3.create(600, 0, 0))
 

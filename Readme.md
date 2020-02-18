@@ -2,7 +2,7 @@
 
 # Descripion
 
-SPH fluid simulation based on Mathias Müller paper "Particle-Based Fluid Simulation for Interactive Applications". The implementation follows the lagrangian viewport.
+Partikelbased fluid simulation based on SPH and Mathias Müller's paper "Particle-Based Fluid Simulation for Interactive Applications". The implementation follows the lagrangian viewport.
 
 
 # Execute 
