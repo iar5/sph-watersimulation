@@ -4,7 +4,6 @@
  */
 
 import * as Vec3 from '../lib/twgl/v3.js'
-import Drop from './objects/Drop.js'
 import Sphere from './objects/Sphere.js'
 import Rectangle from './objects/Rectangle.js'
 import Pool from './objects/Pool.js'
@@ -19,12 +18,12 @@ const VISC = 0.1 // Ns/m^2
 const PARTICLE_RADIUS = 0.03 // m
 const PARTICLE_MASS = 0.0001 // kg
 
-const REST_DENS = 1000 // dichte von wasser 993 kg/m^3
-const GAS_CONST = 2000 // stiffness, Nm/kg
+const REST_DENS = 1000 // 993 kg/m^3 density of water
+const GAS_CONST = 2000 // Nm/kg also called stiffness
 
 // optimization: precalculate constant values and initialise vec3s to reuse them in code
 const H = PARTICLE_RADIUS*2 // kernel radius
-const H2 = H*H
+const HH = H*H
 const rij = Vec3.create() // difference between drop i and j
 const rvij = Vec3.create() // difference in velocity between drop i and j
 const fpress = Vec3.create() // pressure force
@@ -75,7 +74,7 @@ function update(){
             pi.p = 0
             for(let pj of collisions){
                 let r2 = Vec3.distanceSq(pi.pos, pj.pos)
-                if(r2 < H2){
+                if(r2 < HH){
                     // rho += PARTICLE_MASS * W
                     pi.rho += poly6(r2)
                 }
@@ -114,8 +113,6 @@ function update(){
                     Vec3.subtract(pj.v, pi.v, rvij)
                     Vec3.mulScalar(rvij, 1/pj.rho * visc(r), rvij)
                     Vec3.add(fvisc, rvij, fvisc)
-
-                    //colorfield += MASS * 1/pj.rho W
                 }
             }
             Vec3.mulScalar(fpress, -PARTICLE_MASS, fpress)
@@ -160,7 +157,7 @@ const SPIKY_GRAD = -45/(Math.PI*Math.pow(H,6))
 const VISC_LAP = 45/(Math.PI*Math.pow(H,6))
 
 function poly6(r2){
-    return POLY6 * Math.pow(H2-r2, 3)
+    return POLY6 * Math.pow(HH-r2, 3)
 }
 function spiky(r){
     return SPIKY_GRAD * Math.pow(H-r, 2)

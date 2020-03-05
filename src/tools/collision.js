@@ -23,6 +23,7 @@ export function testPointSphere(p, m, r){
     return (dist <= r)
 }
 
+
 /**
  * test in 2D (XZ) if point is in rectangle represented by midpoint, width and depth
  * @param {Vec3} p 
@@ -39,21 +40,41 @@ export function testPointRectangle(p, m, width, depth){
 }
 
 /**
- * test in 2D (XZ) if segment intersects with XZ plane
- * @param {Vec3} a 
- * @param {Vec3} b 
- * @param {Number} d 
- * @returns {Boolean}
- */
-export function testSegmentPlane(a, b, d){
-    return a[1] > d && b[1] < d
-}
-
-/**
  * 
  */
 export function testSegmentSphere(o, v, m, r){
+    console.log("TODO");
     return true
+}
+
+/**
+ * https://math.stackexchange.com/questions/7931/point-below-a-plane
+ * test if segment intersects plane given by hessische normalform
+ * @param {Vec3} a point a
+ * @param {Vec3} b point b
+ * @param {Vec3} n plane normale
+ * @param {Number} d plane distance
+ * @returns {Boolean}
+ */
+export function testSegmentPlane(a, b, n, d){
+    let i = pointPlaneDistance(a, n, d)
+    let j = pointPlaneDistance(b, n, d)
+    return i < 0 && j > 0 || i > 0 && j < 0
+}
+
+
+/**
+ * plane given by hessische normalform 
+ * @param {Vec3} p point
+ * @param {Vec3} n plane normal
+ * @param {Vec3} d plane distance
+ * @returns {Number} [-, 0, +] distance point/plane in normal direction
+ */
+export function pointPlaneDistance(p, n, d){
+    let planePoint = Vec3.mulScalar(n, d, temp) 
+    let s = Vec3.subtract(p, planePoint, temp2)
+    let dot = Vec3.dot(s, n)
+    return dot
 }
 
 /**
@@ -116,16 +137,19 @@ export function intersectSegmentPlane(a, b, n, d, out=Vec3.create()){
 }
 
 /**
+ * TODO only working for refelction in direction of surface normal
+ * 
  * https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
  * out = in - 2*(in*n) \cdot n
  * 
  * @param {Vec3} vec incoming vector  
- * @param {Vec3} n normalized(!) plane normal
- * @param {Vec3?} out must not be the same vector like vec(!)
+ * @param {Vec3} n plane normal
+ * @param {Vec3?} out must not be the same vector like vec!
  * @returns {Vec} out outcoming vector with (same length as incoming vector) 
  */
-export function reflectVecOnPlane(vec, n, out=Vec3.create()){
+export function reflectRayOnPlane(vec, n, out=Vec3.create()){
     Vec3.mulScalar(n, 2*Vec3.dot(vec, n), out)
     Vec3.subtract(vec, out, out)
     return out
 }
+

@@ -3,7 +3,6 @@ import * as twglprimitives from '../lib/twgl/primitives.js'
 import * as v3 from '../lib/twgl/v3.js';
 import * as m4 from '../lib/twgl/m4.js';
 import Stats from '../lib/stats.module.js'
-import { degToRad } from './tools//utils.js'
 import { simulation } from './simulation.js'
 import { point_vs, point_fs } from './shader/point.js';
 import { diffus_vs, diffus_fs } from './shader/diffus.js';
@@ -32,11 +31,6 @@ gl.enable(gl.BLEND)
 gl.enable(gl.DEPTH_TEST)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-
-
-//////////////////
-//  LOAD SHADER //
-//////////////////
 const pointProgram = twgl.createProgramInfo(gl, [point_vs, point_fs]);
 const diffusProgram = twgl.createProgramInfo(gl, [diffus_vs, diffus_fs]);
 requestAnimationFrame(render);
@@ -95,21 +89,14 @@ function render(time) {
     if(!pause) 
         simulation.update() 
 
-    const m = 7141.5679592517162746
-    const mass = 0.0001
-    const highdens = 3
-    const lowdens = 1
-    var min = Number.MAX_VALUE
-    var max = Number.NEGATIVE_INFINITY
-
     const drops = simulation.getDrops()
     const dropsPos = []
     const dropsColor = []
     drops.forEach(drop => {
         dropsPos.push(drop.pos[0], drop.pos[1], drop.pos[2])
-        dropsColor.push(0.1, 0.1, 1, 1)
-        //let v = v3.normalize(drop.v)
-        //dropsColor.push(v[0], v[1], v[2], 1)
+        //dropsColor.push(0.1, 0.1, 1, 1)
+        dropsColor.push(0.1, 0.1, 1-(drop.rho-0.8)*5, 1)
+
     })  
 
     gl.useProgram(pointProgram.program);
@@ -191,4 +178,13 @@ document.onmousemove = function(e) {
     m4.multiply(newRotationMatrix, camera, camera);
 }
 
+
+/**
+ * 
+ * @param {Number} degrees 
+ * @returns {Number} radians
+ */
+export function degToRad(degrees) {
+    return degrees * Math.PI / 180;
+}
 
