@@ -2,14 +2,11 @@
 
 # Descripion
 
-Partikelbased fluid simulation based on SPH and Mathias Müller's paper "Particle-Based Fluid Simulation for Interactive Applications". The implementation follows the lagrangian viewport.
+Smoothed Particle Hydrodynamics fluid simulation based on Mathias Müller's paper "Particle-Based Fluid Simulation for Interactive Applications" with lagrangian viewport.
 
 
-# Execute 
-Install a local server if needed with
-
+# Execution
+A local server is required to run the application locally. E.g.
 `npm install http-server -g`
-
-and run with
-
-`http-server .`
+and start with
+`http-server`
